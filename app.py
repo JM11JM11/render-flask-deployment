@@ -1,7 +1,8 @@
 import os
 import random
-import re
+import re # Added for slug generation
 from flask import Flask, render_template_string, request, redirect, url_for
+# Import the Google GenAI SDK for the LLM call
 from google import genai
 from google.genai.errors import APIError
 
@@ -210,12 +211,6 @@ SEARCH_RESULTS_HTML = """
                                 </a>
                             </h2>
                             
-                            <p class="text-sm text-gray-600 mb-2">
-                                Source: 
-                                <span class="font-medium text-gray-700">{{ result.source }}</span> | 
-                                Author: {{ result.author }} | 
-                                Year: {{ result.year }}
-                            </p>
                             <p class="text-gray-700 leading-relaxed">
                                 {{ result.summary }}
                             </p>
@@ -383,13 +378,22 @@ def generate_url_slug(title):
 
 def generate_general_results(query, count=105):
     """
-    Generates a large, diverse list of mock search results based on the query.
-    Note: Now includes a unique 'slug' for the article link.
+    Generates a large, diverse list of mock search results based on the query,
+    formatted as AI-style abstracts/summaries.
     """
     common_subjects = ["Photography", "Cooking", "Travel Guides", "History", "Coding Tutorials", "Fitness", "Personal Finance", "Gardening", "Science News", "Music Theory", "World Events", "Home Decor", "Gaming", "DIY Projects"]
     common_formats = ["How to", "Best 10 Tips for", "A Deep Dive into", "The Ultimate Guide to", "Review of", "Top 5 Mistakes in", "Beginner's Guide to", "Quick Start:", "Comprehensive FAQ on"]
     common_authors = ["Jane Doe", "John Smith", "The Daily Explorer", "Tech Guru", "Culinary Arts", "Historian Guy", "DIY Master", "Financial Freedom Blog"]
     
+    # New list of AI-style summary starters/structures
+    ai_starters = [
+        "Research Abstract: This study investigates the inverse correlation between",
+        "Conceptual Synthesis: The key findings reveal a dependency between",
+        "Analytical Overview: We present a comprehensive examination of the factors influencing",
+        "Data-Driven Summary: A statistical analysis demonstrates the impact of",
+        "Key Insights Report: Emerging patterns suggest a shift in the traditional approach to"
+    ]
+
     results = []
     
     # Store results to check for title duplicates during generation
@@ -417,13 +421,16 @@ def generate_general_results(query, count=105):
             
             slug = generate_url_slug(title)
             
-            # Note: year is an integer here
+            # Generate the new abstract-like summary
+            summary_starter = random.choice(ai_starters)
+            new_summary = f"{summary_starter} {query} within the domain of {subject}, providing condensed insights and preliminary conclusions. This is result number {len(results)+1}."
+
             result = {
                 "title": title,
                 "author": random.choice(common_authors),
                 "year": year,
                 "source": source,
-                "summary": f"This result discusses the wide-ranging implications and applications of {query} within the domain of {subject}, providing comprehensive examples and case studies. This is result number {len(results)+1}.",
+                "summary": new_summary, # Use the new abstract-like summary
                 "slug": slug
             }
             results.append(result)
@@ -452,8 +459,7 @@ def generate_gemini_result(client, query):
         result = {
             "title": mock_title,
             "author": "Gemini AI",
-            # Note: year is an integer here, but the model output is a string
-            "year": 2025, 
+            "year": 2025,
             "source": "Multimodal Analysis (AI-Generated)",
             "summary": mock_summary,
             "slug": slug
@@ -492,8 +498,7 @@ def generate_gemini_result(client, query):
             result = {
                 "title": data['TITLE'],
                 "author": "Gemini AI", # Overriding the generated author to ensure it's always 'Gemini AI'
-                # Note: data['YEAR'] is a string here, which caused the error
-                "year": data['YEAR'], 
+                "year": data['YEAR'],
                 "source": data['SOURCE'] + " (AI-Generated)", # Mark it as AI
                 "summary": data['SUMMARY'],
                 "slug": slug
