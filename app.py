@@ -52,8 +52,7 @@ def get_gemini_client():
     return _GEMINI_CLIENT
 
 # -------------------------------------------------------------------------
-# HTML Template Strings
-# (Only MINDWORK_HOMEPAGE_HTML is modified)
+# HTML Template Strings (UPDATED LOGO AND FUNCTIONALITY)
 # -------------------------------------------------------------------------
 
 # --- Common Footer Component (for reuse) ---
@@ -90,7 +89,7 @@ COMMON_FOOTER = """
     </footer>
 """
 
-# NOTE: LOGIN_FORM_HTML and REGISTER_FORM_HTML content remains unchanged for brevity.
+# --- MODIFIED: LOGIN_FORM_HTML ---
 LOGIN_FORM_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -110,6 +109,10 @@ LOGIN_FORM_HTML = """
                     }
                 }
             }
+        }
+        function startMockGoogleAuth(action) {
+            console.log(`Starting mock Google ${action} flow...`);
+            window.location.href = '/oauth/google';
         }
     </script>
 </head>
@@ -135,7 +138,8 @@ LOGIN_FORM_HTML = """
             <a href="/register" class="text-sm text-[#1f4e79] hover:text-blue-700">Don't have an account? Register</a>
         </div>
         <hr class="my-4">
-        <button onclick="console.log('Google OAuth flow started...')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <!-- MODIFIED: Log In with Google Button -->
+        <button onclick="startMockGoogleAuth('Log In')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
             <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
             Log In with Google
         </button>
@@ -143,6 +147,7 @@ LOGIN_FORM_HTML = """
 """
 LOGIN_FORM_HTML += COMMON_FOOTER + "</body></html>"
 
+# --- MODIFIED: REGISTER_FORM_HTML ---
 REGISTER_FORM_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -162,6 +167,10 @@ REGISTER_FORM_HTML = """
                     }
                 }
             }
+        }
+        function startMockGoogleAuth(action) {
+            console.log(`Starting mock Google ${action} flow...`);
+            window.location.href = '/oauth/google';
         }
     </script>
 </head>
@@ -192,7 +201,8 @@ REGISTER_FORM_HTML = """
             <a href="/login" class="text-sm text-[#1f4e79] hover:text-blue-700">Already have an account? Log In</a>
         </div>
         <hr class="my-4">
-        <button onclick="console.log('Google OAuth flow started...')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <!-- MODIFIED: Sign Up with Google Button -->
+        <button onclick="startMockGoogleAuth('Sign Up')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
             <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
             Sign Up with Google
         </button>
@@ -200,7 +210,7 @@ REGISTER_FORM_HTML = """
 """
 REGISTER_FORM_HTML += COMMON_FOOTER + "</body></html>"
 
-# --- MODIFIED: MINDWORK_HOMEPAGE_HTML includes camera elements and updated JS logic ---
+# --- MODIFIED: MINDWORK_HOMEPAGE_HTML ---
 MINDWORK_HOMEPAGE_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -385,7 +395,7 @@ MINDWORK_HOMEPAGE_HTML = """
                                                         Upload Pictures/Files
                                                     </a>
                                                     
-                                                    <!-- MODIFIED: Option 2: Take Photo (calls new JS function) -->
+                                                    <!-- Option 2: Take Photo (calls new JS function) -->
                                                     <a href="#" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-blue rounded-b-xl" role="menuitem" onclick="startCameraModal(); toggleUploadMenu(); return false;">
                                                         <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                                         Take Photo
@@ -420,9 +430,9 @@ MINDWORK_HOMEPAGE_HTML = """
                                     </a>
                                 </div>
                                 <div class="mt-3 sm:mt-0 sm:ml-3 rounded-lg shadow-xl w-full sm:w-auto">
-                                    <!-- Added Google Logo -->
-                                    <button onclick="window.location.href='/oauth/google'" class="w-full flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-300">
-                                        <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
+                                    <!-- MODIFIED: Sign Up with Google Button with corrected flex/logo alignment -->
+                                    <button onclick="startMockGoogleAuth('Sign Up')" class="w-full flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-300">
+                                        <img class="h-5 w-5 mr-3" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
                                         Sign Up with Google
                                     </button>
                                 </div>
@@ -522,6 +532,13 @@ MINDWORK_HOMEPAGE_HTML = """
     <script>
         let currentStream; // Global variable to hold the MediaStream object
 
+        // --- NEW/MODIFIED: Authentication Mock Function ---
+        function startMockGoogleAuth(action) {
+            console.log(`MOCK: Initiating Google ${action} flow. Redirecting to home...`);
+            // This URL hits the Flask route which just logs and redirects back to home
+            window.location.href = '/oauth/google';
+        }
+        
         function toggleMenu() {
             const menuPanel = document.getElementById('mobile-menu-panel');
             const menuButton = document.getElementById('mobile-menu-open-btn');
@@ -860,6 +877,8 @@ def register():
 @app.route('/oauth/google')
 def google_oauth():
     """Placeholder route for initiating the Google OAuth flow."""
+    # Simulate a brief OAuth handshake before redirecting to home
+    print("MOCK: Successful Google OAuth handshake simulated.")
     return redirect(url_for('home'))
 
 
