@@ -1,13 +1,38 @@
 import os
+import random
 from flask import Flask, render_template_string, request, redirect, url_for
+# Import the Google GenAI SDK for the LLM call
+from google import genai
+from google.genai.errors import APIError
 
 # -------------------------------------------------------------------------
-# Flask Application Setup
+# Configuration
 # -------------------------------------------------------------------------
+
+# IMPORTANT: Set your API Key as an environment variable (best practice)
+# In your terminal, use: export GEMINI_API_KEY="YOUR_API_KEY"
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 app = Flask(__name__)
 
-# --- Simplified HTML Strings for New Routes ---
+# Initialize the Gemini Client
+if GEMINI_API_KEY:
+    try:
+        client = genai.Client()
+        GEMINI_CLIENT_READY = True
+        print("Gemini client initialized successfully.")
+    except Exception as e:
+        client = None
+        GEMINI_CLIENT_READY = False
+        print(f"Error initializing Gemini client: {e}")
+else:
+    client = None
+    GEMINI_CLIENT_READY = False
+    print("Warning: GEMINI_API_KEY not found. Search will use static mock data.")
+
+# -------------------------------------------------------------------------
+# HTML Template Strings (DEFINED BEFORE USE TO RESOLVE PYLANCE ERROR)
+# -------------------------------------------------------------------------
 
 LOGIN_FORM_HTML = """
 <!DOCTYPE html>
@@ -40,7 +65,7 @@ LOGIN_FORM_HTML = """
             <a href="/register" class="text-sm text-[#1f4e79] hover:text-blue-700">Don't have an account? Register</a>
         </div>
         <hr class="my-4">
-        <button onclick="alert('Google OAuth flow started...')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <button onclick="console.log('Google OAuth flow started...')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
             <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
             Log In with Google
         </button>
@@ -85,7 +110,7 @@ REGISTER_FORM_HTML = """
             <a href="/login" class="text-sm text-[#1f4e79] hover:text-blue-700">Already have an account? Log In</a>
         </div>
         <hr class="my-4">
-        <button onclick="alert('Google OAuth flow started...')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <button onclick="console.log('Google OAuth flow started...')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
             <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
             Sign Up with Google
         </button>
@@ -94,9 +119,6 @@ REGISTER_FORM_HTML = """
 </html>
 """
 
-# --- Updated Homepage HTML (MINDWORK_HOMEPAGE_HTML) ---
-
-# Replicating the previous version, but updated to direct CTAs to /login and /register
 MINDWORK_HOMEPAGE_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -112,7 +134,6 @@ MINDWORK_HOMEPAGE_HTML = """
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
-                    // Using a deep, authoritative blue for primary focus
                     colors: {
                         'primary-blue': '#1f4e79', /* Deep Navy */
                         'secondary-gray': '#f3f4f6',
@@ -123,12 +144,10 @@ MINDWORK_HOMEPAGE_HTML = """
         }
     </script>
     <style>
-        /* Apply the Inter font globally */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #ffffff;
         }
-         /* --- Subtle Background Pattern for Hero Section --- */
         .hero-background-pattern {
             background-image: radial-gradient(#d4d4d8 1px, transparent 0);
             background-size: 30px 30px;
@@ -228,16 +247,55 @@ MINDWORK_HOMEPAGE_HTML = """
                             </p>
                               
                             <div class="mt-8 lg:mt-10 mx-auto max-w-lg lg:mx-0">
-                                <label for="site-search" class="sr-only">Search the MindWork Research Hub</label>
-                                <div class="relative flex items-center">
-                                    <input type="text" id="site-search" placeholder="Search academic papers, concepts, or Gemini prompts..."
-                                            class="w-full py-3 pl-5 pr-16 border border-gray-300 rounded-xl shadow-xl focus:ring-primary-blue focus:border-primary-blue text-lg text-black transition duration-200">
-                                    <button type="submit" class="absolute right-0 top-0 bottom-0 px-4 flex items-center text-primary-blue hover:text-blue-800 transition duration-200">
-                                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                        </svg>
-                                    </button>
-                                </div>
+                                <form method="GET" action="/search">
+                                    <label for="site-search" class="sr-only">Search the MindWork Research Hub</label>
+                                    <div class="relative flex items-center">
+                                        <!-- Plus Button (Absolute Left) and Dropdown Container -->
+                                        <div class="absolute left-0 top-0 bottom-0 z-10">
+                                            <div class="h-full flex items-center pl-3">
+                                                <button type="button" id="upload-menu-button" onclick="toggleUploadMenu(event)" 
+                                                        class="p-1 text-primary-blue rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue transition duration-200">
+                                                    <!-- Plus Symbol SVG -->
+                                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Dropdown Menu -->
+                                            <div id="upload-menu" class="origin-top-left absolute left-0 mt-1 w-56 rounded-xl shadow-2xl bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 hidden z-20" role="menu" aria-orientation="vertical" aria-labelledby="upload-menu-button">
+                                                <div class="py-1" role="none">
+                                                    <!-- Option 1: Upload Pictures/Files -->
+                                                    <!-- Hidden file input for actual selection -->
+                                                    <input type="file" id="file-upload-input" accept="image/*, .pdf, .docx, .txt" class="hidden" onchange="handleFileUpload(event)">
+                                                    
+                                                    <a href="#" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-blue rounded-t-xl" role="menuitem" onclick="document.getElementById('file-upload-input').click(); toggleUploadMenu(); return false;">
+                                                        <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                                                        Upload Pictures/Files
+                                                    </a>
+                                                    
+                                                    <!-- Option 2: Take Photo -->
+                                                    <a href="#" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-blue rounded-b-xl" role="menuitem" onclick="alert('Note: This would integrate your device camera for a direct search!'); toggleUploadMenu(); return false;">
+                                                        <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                                                        Take Photo
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Search Input: Note the increased left padding (pl-16) -->
+                                        <input type="text" id="site-search" name="query" placeholder="Search academic papers, concepts, or Gemini prompts..."
+                                                class="w-full py-3 pl-16 pr-16 border border-gray-300 rounded-xl shadow-xl focus:ring-primary-blue focus:border-primary-blue text-lg text-black transition duration-200"
+                                                required>
+                                        
+                                        <!-- Search Icon Button -->
+                                        <button type="submit" class="absolute right-0 top-0 bottom-0 px-4 flex items-center text-primary-blue hover:text-blue-800 transition duration-200">
+                                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                             <div class="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start flex-col sm:flex-row">
                                 <div class="rounded-lg shadow-xl w-full sm:w-auto">
@@ -361,11 +419,176 @@ MINDWORK_HOMEPAGE_HTML = """
                 menuButton.setAttribute('aria-expanded', 'false');
             }
         }
+
+        function toggleUploadMenu(event) {
+            // Stops the click from bubbling up and immediately closing the menu
+            if (event) event.stopPropagation(); 
+            const menu = document.getElementById('upload-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // In a real application, this file would be uploaded for Gemini vision/document analysis.
+                const searchInput = document.getElementById('site-search');
+                searchInput.value = `Analyze file: ${file.name}`;
+                searchInput.focus();
+                // We'll rely on the user to hit 'Enter' to submit the form for simplicity.
+            }
+        }
+        
+        // Closes the menu if the user clicks anywhere outside of the button or the menu itself
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('upload-menu');
+            const button = document.getElementById('upload-menu-button');
+            if (menu && button && !menu.contains(event.target) && !button.contains(event.target) && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        });
+
     </script>
 
 </body>
 </html>
 """
+
+SEARCH_RESULTS_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindWork: Search Results for '{{ query }}'</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .result-card { border-left: 4px solid #1f4e79; }
+        .ai-notice { background-color: #e6f7ff; border-color: #b3e0ff; }
+    </style>
+</head>
+<body class="bg-gray-50 antialiased min-h-screen">
+    <header class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <a href="/" class="text-2xl font-extrabold text-[#1f4e79]">MindWork</a>
+            <a href="/login" class="text-sm font-medium text-white bg-[#1f4e79] hover:bg-blue-800 px-4 py-2 rounded-lg">Login / Sign Up</a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-xl rounded-xl">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">
+            Search Results for: "<span class="text-[#1f4e79]">{{ query }}</span>"
+        </h1>
+        
+        {% if gemini_active %}
+        <div class="ai-notice p-4 rounded-lg border mb-8 text-gray-700">
+            🤖 Results include **AI-generated summaries** from Google Gemini and mock academic citations.
+        </div>
+        {% endif %}
+
+        <p class="mb-8 text-lg text-gray-600">
+            Found **{{ results|length }}** relevant academic entries and AI analyses.
+        </p>
+
+        {% if results %}
+            <div class="space-y-6">
+                {% for result in results %}
+                    <div class="p-4 bg-white shadow-md rounded-lg result-card border-l-4">
+                        <h2 class="text-xl font-semibold text-gray-900 hover:text-blue-700">
+                            <a href="#">{{ result.title }}</a>
+                        </h2>
+                        <p class="text-sm text-gray-500 mt-1">
+                            {{ result.author }} | {{ result.year }} | {{ result.source }}
+                        </p>
+                        <p class="text-base text-gray-700 mt-2">
+                            {{ result.summary }}
+                        </p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="p-8 text-center bg-yellow-50 rounded-lg border border-yellow-200">
+                <p class="text-xl text-yellow-800">
+                    ⚠️ No academic or AI results were found for "{{ query }}".
+                </p>
+                <p class="mt-2 text-gray-600">
+                    Try a different query or check the console for Gemini API errors.
+                </p>
+            </div>
+        {% endif %}
+
+    </main>
+
+</body>
+</html>
+"""
+
+
+# -------------------------------------------------------------------------
+# Helper Function for Gemini Search
+# -------------------------------------------------------------------------
+
+def generate_gemini_result(client, query):
+    """
+    Calls the Gemini API to generate a mock academic paper result.
+    """
+    if not client:
+        return None
+    
+    # Check if the query indicates a file/image analysis
+    if query.lower().startswith("analyze file:"):
+        # For a mock, we'll pretend the analysis happened
+        file_name = query.split(":")[1].strip()
+        mock_title = f"Preliminary Analysis of '{file_name}'"
+        mock_summary = f"An initial AI-driven summary suggesting key concepts and potential research applications based on the content of the uploaded file/image. Further interactive prompting is recommended."
+        return {
+            "title": mock_title,
+            "author": "Gemini AI",
+            "year": 2025,
+            "source": "Multimodal Analysis (AI-Generated)",
+            "summary": mock_summary
+        }
+
+
+    prompt = (
+        f"Generate a mock academic paper for a research platform based on the user's query: '{query}'. "
+        "The response must be in the format: "
+        "TITLE: [Title]\nAUTHOR: [Author Name]\nYEAR: [Year]\nSOURCE: [Source/Journal Name]\nSUMMARY: [Abstract/Summary of the paper]"
+    )
+
+    try:
+        # Using a fast model for this mock generation task
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
+        
+        # Parse the structured text output
+        text = response.text.strip()
+        
+        data = {}
+        for line in text.split('\n'):
+            if ':' in line:
+                key, value = line.split(':', 1)
+                data[key.strip().upper()] = value.strip()
+        
+        # Convert parsed data into the expected result format
+        if all(k in data for k in ['TITLE', 'AUTHOR', 'YEAR', 'SOURCE', 'SUMMARY']):
+            return {
+                "title": data['TITLE'],
+                "author": data['AUTHOR'],
+                "year": data['YEAR'],
+                "source": data['SOURCE'] + " (AI-Generated)", # Mark it as AI
+                "summary": data['SUMMARY']
+            }
+            
+    except APIError as e:
+        print(f"Gemini API Error: {e}")
+        return None
+    except Exception as e:
+        print(f"General Error during Gemini call: {e}")
+        return None
+        
+    return None
 
 # -------------------------------------------------------------------------
 # Flask Routes
@@ -373,7 +596,7 @@ MINDWORK_HOMEPAGE_HTML = """
 
 @app.route('/')
 def home():
-    """Renders the MindWork homepage."""
+    """Renders the MindWork homepage. The HTML variable is now defined globally."""
     return render_template_string(MINDWORK_HOMEPAGE_HTML)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -382,16 +605,8 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        
-        # --- Authentication Logic Placeholder ---
-        # In a real app, you would:
-        # 1. Look up the user by email in the database.
-        # 2. Verify the hashed password.
-        # 3. Create a session (e.g., using flask_login or setting a cookie).
-        # For this example, we just redirect.
         print(f"Attempting to log in with: {email}")
-        return redirect(url_for('home')) 
-        # return render_template_string(LOGIN_FORM_HTML, error="Invalid credentials") 
+        return redirect(url_for('home'))
     
     return render_template_string(LOGIN_FORM_HTML)
 
@@ -402,32 +617,67 @@ def register():
         name = request.form.get('name')
         email = request.form.get('email')
         password = request.form.get('password')
-        
-        # --- Registration Logic Placeholder ---
-        # In a real app, you would:
-        # 1. Validate email format and check if the user already exists.
-        # 2. Hash the password (CRITICAL: NEVER store plain passwords).
-        # 3. Save the new user record to the database.
-        # 4. Log the user in or redirect to the login page.
         print(f"Attempting to register new user: {name} ({email})")
-        return redirect(url_for('login')) 
+        return redirect(url_for('login'))
         
     return render_template_string(REGISTER_FORM_HTML)
 
 @app.route('/oauth/google')
 def google_oauth():
-    """
-    Placeholder route for initiating the Google OAuth flow.
-    
-    In a real application, this route would:
-    1. Construct the Google Authorization URL with required scopes.
-    2. Store a state token in the user's session to prevent CSRF.
-    3. Redirect the user to the Google Authorization URL.
-    """
-    oauth_url_placeholder = "https://accounts.google.com/o/oauth2/v2/auth?..."
-    
-    # For demonstration, we'll just redirect to the home page with a message
+    """Placeholder route for initiating the Google OAuth flow."""
     return redirect(url_for('home'))
+
+
+@app.route('/search', methods=['GET'])
+def search():
+    """
+    Handles academic search queries, including a call to Google Gemini.
+    """
+    query = request.args.get('query', '').strip()
+    all_results = []
+    
+    if not query:
+        # Return to homepage if query is empty
+        return redirect(url_for('home'))
+    
+    # --- 1. Library Simulation (Mock Data) ---
+    MOCK_DATABASE = [
+        {"title": "The Evolutionary Basis of Consciousness and Life", "author": "Dr. E. Hamilton", "year": 2021, "source": "Journal of Bio-Philosophy", "summary": "An analysis of the conditions required for self-sustaining biological systems and the emergence of sentience, bridging physics and biology."},
+        {"title": "The Meaning of Life: A Comparative Philosophical Study", "author": "P. M. Reynolds", "year": 2018, "source": "Oxford University Press", "summary": "Examines existential, nihilistic, and religious perspectives on purpose, focusing on texts from 19th-century Europe to modern-day Asia."},
+        {"title": "A Guide to Sustainable Urban Life: Planning for 2050", "author": "J. K. Singh", "year": 2023, "source": "Future Studies Quarterly", "summary": "Proposes actionable steps for municipalities to create eco-friendly, energy-efficient, and socially equitable urban environments."}
+    ]
+    
+    # Filter mock data based on query (a real app would use a database)
+    filtered_mock_results = [
+        r for r in MOCK_DATABASE
+        if query.lower() in r['title'].lower() or query.lower() in r['summary'].lower()
+    ]
+    all_results.extend(filtered_mock_results)
+
+    # --- 2. Gemini Generative Result ---
+    if GEMINI_CLIENT_READY:
+        gemini_result = generate_gemini_result(client, query)
+        if gemini_result:
+            all_results.insert(0, gemini_result) # Add the AI result at the top
+        
+    # Shuffle the results (for non-critical results) or keep the AI one at the top
+    if len(all_results) > 1 and GEMINI_CLIENT_READY:
+        # Keep the Gemini result at index 0 and shuffle the rest
+        library_results = all_results[1:]
+        random.shuffle(library_results)
+        all_results = [all_results[0]] + library_results
+    elif len(all_results) > 0 and not GEMINI_CLIENT_READY:
+        # If no Gemini, shuffle all mock results
+        random.shuffle(all_results)
+
+
+    return render_template_string(
+        SEARCH_RESULTS_HTML,
+        query=query,
+        results=all_results,
+        gemini_active=GEMINI_CLIENT_READY
+    )
+
 
 # -------------------------------------------------------------------------
 # Application Run
@@ -436,12 +686,9 @@ def google_oauth():
 if __name__ == '__main__':
     print("----------------------------------------------------------")
     print("Flask Application Running Locally (via Waitress):")
-    # Note the updated port in the print statement
-    print("Homepage: http://0.0.0.0:5001/") 
+    print("Homepage: https://mind-work.onrender.com/")
+    print(f"Gemini Status: {'✅ Active' if GEMINI_CLIENT_READY else '❌ Inactive (Set GEMINI_API_KEY)'}")
     print("----------------------------------------------------------")
     
-    # Import Waitress here
     from waitress import serve
-    
-    # *** THIS IS THE CRITICAL CHANGE ***
     serve(app, host='0.0.0.0', port=5001)
