@@ -1,8 +1,7 @@
 import os
 import random
-import re # Added for slug generation
+import re
 from flask import Flask, render_template_string, request, redirect, url_for
-# Import the Google GenAI SDK for the LLM call
 from google import genai
 from google.genai.errors import APIError
 
@@ -318,7 +317,7 @@ ARTICLE_PAGE_HTML = """
                     
                     {% if article.author == 'Gemini AI' %}
                         <p>
-                            **In-depth Analysis by Gemini AI:** Expanding upon the initial summary, the research reveals that the core finding, *{{ article.title }}*, demonstrates a significant deviation from previous models. Specifically, the data suggests that the variable 'Complexity Index' has an inverse correlation with 'User Engagement' across 85% of documented case studies. This contradicts the traditional 'Information Density Model' widely accepted until {{ article.year - 1 }}. The next section will detail the mathematical model used for this calculation.
+                            **In-depth Analysis by Gemini AI:** Expanding upon the initial summary, the research reveals that the core finding, *{{ article.title }}*, demonstrates a significant deviation from previous models. Specifically, the data suggests that the variable 'Complexity Index' has an inverse correlation with 'User Engagement' across 85% of documented case studies. This contradicts the traditional 'Information Density Model' widely accepted until {{ article.year|int - 1 }}. The next section will detail the mathematical model used for this calculation.
                         </p>
                         <p>
                             **Section 1: Methodological Approach.** The analysis employed a novel Recursive Cluster Sampling (RCS) technique. This allowed for the efficient processing of large, unstructured datasets (the 100+ simulated results) to identify emergent themes related to the query "{{ original_query }}".
@@ -418,6 +417,7 @@ def generate_general_results(query, count=105):
             
             slug = generate_url_slug(title)
             
+            # Note: year is an integer here
             result = {
                 "title": title,
                 "author": random.choice(common_authors),
@@ -452,7 +452,8 @@ def generate_gemini_result(client, query):
         result = {
             "title": mock_title,
             "author": "Gemini AI",
-            "year": 2025,
+            # Note: year is an integer here, but the model output is a string
+            "year": 2025, 
             "source": "Multimodal Analysis (AI-Generated)",
             "summary": mock_summary,
             "slug": slug
@@ -491,7 +492,8 @@ def generate_gemini_result(client, query):
             result = {
                 "title": data['TITLE'],
                 "author": "Gemini AI", # Overriding the generated author to ensure it's always 'Gemini AI'
-                "year": data['YEAR'],
+                # Note: data['YEAR'] is a string here, which caused the error
+                "year": data['YEAR'], 
                 "source": data['SOURCE'] + " (AI-Generated)", # Mark it as AI
                 "summary": data['SUMMARY'],
                 "slug": slug
@@ -926,7 +928,7 @@ def article(slug):
 if __name__ == '__main__':
     print("----------------------------------------------------------")
     print("Flask Application Running Locally (via built-in server):")
-    print("Homepage: https://mind-work.onrender.com")
+    print("Homepage: http://127.0.0.1:5002/")
     print(f"Gemini Status: {'✅ Active' if GEMINI_CLIENT_READY else '❌ Inactive (Set GEMINI_API_KEY)'}")
     print("----------------------------------------------------------")
     
