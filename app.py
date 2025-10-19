@@ -35,6 +35,41 @@ else:
 # HTML Template Strings
 # -------------------------------------------------------------------------
 
+# --- Common Footer Component (for reuse) ---
+COMMON_FOOTER = """
+    <footer class="bg-gray-800 mt-10">
+        <div class="max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8">
+            <nav class="-mx-5 -my-2 flex flex-wrap justify-center" aria-label="Footer">
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Terms of Use</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Privacy Policy</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Support</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Accessibility</a>
+                </div>
+            </nav>
+            <!-- New Contact/Report Section -->
+            <div class="mt-8 text-center text-base text-gray-400">
+                <p>
+                    For feedback, support, or to report an issue, please contact:
+                    <a href="mailto:Mesadieujohnm01@gmail.com" class="text-accent-gold hover:text-yellow-300 transition duration-150 font-medium">
+                        Mesadieujohnm01@gmail.com
+                    </a>
+                </p>
+            </div>
+            <p class="mt-4 text-center text-base text-gray-400">
+                &copy; 2025 MindWork, Inc. Research tools for the modern explorer.
+            </p>
+        </div>
+    </footer>
+"""
+
+# NOTE: Removed the 'f' prefix and the internal {COMMON_FOOTER} placeholder
 LOGIN_FORM_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -43,9 +78,22 @@ LOGIN_FORM_HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindWork: Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1f4e79', /* Deep Navy */
+                        'secondary-gray': '#f3f4f6',
+                        'accent-gold': '#d9a400', /* Gold for academic accent */
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl">
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl mt-10 mb-10">
         <h2 class="text-3xl font-extrabold text-center text-[#1f4e79]">Log In to MindWork</h2>
         <form method="POST" action="/login" class="space-y-4">
             <div>
@@ -66,15 +114,16 @@ LOGIN_FORM_HTML = """
             <a href="/register" class="text-sm text-[#1f4e79] hover:text-blue-700">Don't have an account? Register</a>
         </div>
         <hr class="my-4">
-        <button onclick="console.log('Google OAuth flow started...')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <button onclick="console.log('Google OAuth flow started...')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
             <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
             Log In with Google
         </button>
     </div>
-</body>
-</html>
 """
+LOGIN_FORM_HTML += COMMON_FOOTER + "</body></html>"
 
+
+# NOTE: Removed the 'f' prefix and the internal {COMMON_FOOTER} placeholder
 REGISTER_FORM_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -83,9 +132,22 @@ REGISTER_FORM_HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindWork: Register</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1f4e79', /* Deep Navy */
+                        'secondary-gray': '#f3f4f6',
+                        'accent-gold': '#d9a400', /* Gold for academic accent */
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl">
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
+    <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl mt-10 mb-10">
         <h2 class="text-3xl font-extrabold text-center text-[#1f4e79]">Create a MindWork Account</h2>
         <form method="POST" action="/register" class="space-y-4">
             <div>
@@ -111,15 +173,15 @@ REGISTER_FORM_HTML = """
             <a href="/login" class="text-sm text-[#1f4e79] hover:text-blue-700">Already have an account? Log In</a>
         </div>
         <hr class="my-4">
-        <button onclick="console.log('Google OAuth flow started...')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+        <button onclick="console.log('Google OAuth flow started...')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
             <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
             Sign Up with Google
         </button>
     </div>
-</body>
-</html>
 """
+REGISTER_FORM_HTML += COMMON_FOOTER + "</body></html>"
 
+# NOTE: Removed the 'f' prefix and the internal {COMMON_FOOTER} placeholder
 MINDWORK_HOMEPAGE_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -161,7 +223,7 @@ MINDWORK_HOMEPAGE_HTML = """
         }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased flex flex-col min-h-screen">
 
     <header class="sticky top-0 z-50 bg-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -232,7 +294,7 @@ MINDWORK_HOMEPAGE_HTML = """
         </div>
     </header>
 
-    <main>
+    <main class="flex-grow">
         <div class="relative overflow-hidden bg-secondary-gray">
             <div class="hero-background-pattern"></div>
             <div class="max-w-7xl mx-auto">
@@ -241,7 +303,8 @@ MINDWORK_HOMEPAGE_HTML = """
                         <div class="sm:text-center lg:text-left">
                             <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
                                 <span class="block xl:inline">Find Everything. Analyze Anything.</span>
-                                <span class="block text-primary-blue xl:inline"> General & AI-Powered Research.</span>
+                                <!-- Updated: Decreased text size to sm:text-4xl md:text-5xl -->
+                                <span class="block text-primary-blue xl:inline sm:text-4xl md:text-5xl"> General & AI-Powered Research.</span> 
                             </h1>
                             <p class="mt-3 text-base text-gray-600 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                                 **MindWork** is your universal discovery platform, combining wide-ranging web search results with Google Gemini's powerful analytical capabilities for every query.
@@ -310,6 +373,7 @@ MINDWORK_HOMEPAGE_HTML = """
                                     </a>
                                 </div>
                                 <div class="mt-3 sm:mt-0 sm:ml-3 rounded-lg shadow-xl w-full sm:w-auto">
+                                    <!-- Added Google Logo -->
                                     <button onclick="window.location.href='/oauth/google'" class="w-full flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-300">
                                         <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
                                         Sign Up with Google
@@ -382,29 +446,7 @@ MINDWORK_HOMEPAGE_HTML = """
         </div>
 
     </main>
-
-    <footer class="bg-gray-800">
-        <div class="max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8">
-            <nav class="-mx-5 -my-2 flex flex-wrap justify-center" aria-label="Footer">
-                <div class="px-5 py-2">
-                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Terms of Use</a>
-                </div>
-                <div class="px-5 py-2">
-                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Privacy Policy</a>
-                </div>
-                <div class="px-5 py-2">
-                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Support</a>
-                </div>
-                <div class="px-5 py-2">
-                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Accessibility</a>
-                </div>
-            </nav>
-            <p class="mt-8 text-center text-base text-gray-400">
-                &copy; 2025 MindWork, Inc. Research tools for the modern explorer.
-            </p>
-        </div>
-    </footer>
-
+    
     <script>
         function toggleMenu() {
             const menuPanel = document.getElementById('mobile-menu-panel');
@@ -449,11 +491,11 @@ MINDWORK_HOMEPAGE_HTML = """
         });
 
     </script>
-
-</body>
-</html>
 """
+MINDWORK_HOMEPAGE_HTML += COMMON_FOOTER + "</body></html>"
 
+
+# NOTE: Removed the 'f' prefix and the internal {COMMON_FOOTER} placeholder
 SEARCH_RESULTS_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -462,12 +504,25 @@ SEARCH_RESULTS_HTML = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MindWork: Search Results for '{{ query }}'</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-blue': '#1f4e79', /* Deep Navy */
+                        'secondary-gray': '#f3f4f6',
+                        'accent-gold': '#d9a400', /* Gold for academic accent */
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         .result-card { border-left: 4px solid #1f4e79; }
         .ai-notice { background-color: #e6f7ff; border-color: #b3e0ff; }
     </style>
 </head>
-<body class="bg-gray-50 antialiased min-h-screen">
+<body class="bg-gray-50 antialiased min-h-screen flex flex-col">
     <header class="bg-white shadow-lg">
         <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <a href="/" class="text-2xl font-extrabold text-[#1f4e79]">MindWork</a>
@@ -475,7 +530,7 @@ SEARCH_RESULTS_HTML = """
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-xl rounded-xl">
+    <main class="max-w-4xl mx-auto mt-10 p-6 bg-white shadow-xl rounded-xl flex-grow w-full">
         <h1 class="text-3xl font-bold text-gray-900 mb-6">
             Search Results for: "<span class="text-[#1f4e79]">{{ query }}</span>"
         </h1>
@@ -518,14 +573,12 @@ SEARCH_RESULTS_HTML = """
         {% endif %}
 
     </main>
-
-</body>
-</html>
 """
+SEARCH_RESULTS_HTML += COMMON_FOOTER + "</body></html>"
 
 
 # -------------------------------------------------------------------------
-# Helper Functions for Search Simulation
+# Helper Functions for Search Simulation (No changes needed here)
 # -------------------------------------------------------------------------
 
 def generate_general_results(query, count=105):
@@ -630,7 +683,7 @@ def generate_gemini_result(client, query):
     return None
 
 # -------------------------------------------------------------------------
-# Flask Routes
+# Flask Routes (No changes needed here)
 # -------------------------------------------------------------------------
 
 @app.route('/')
@@ -723,3 +776,4 @@ if __name__ == '__main__':
     
     from waitress import serve
     serve(app, host='0.0.0.0', port=5001)
+
