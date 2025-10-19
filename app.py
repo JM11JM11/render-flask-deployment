@@ -4,6 +4,7 @@ from flask import Flask, render_template_string, request, redirect, url_for
 # Import the Google GenAI SDK for the LLM call
 from google import genai
 from google.genai.errors import APIError
+from waitress import serve as waitress_serve # Rename to avoid conflict with 'serve()' function
 
 # -------------------------------------------------------------------------
 # Configuration & Client Setup (Refactored for faster startup)
@@ -113,7 +114,7 @@ LOGIN_FORM_HTML = f"""
 {COMMON_FOOTER}
 """
 
-# --- Home Page (Search Form) - Changed from f""" to """ ---
+# --- Home Page (Search Form) - Uses standard triple quotes for Jinja compatibility ---
 HOME_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -168,7 +169,7 @@ HOME_HTML = """
     </div>
 """ + COMMON_FOOTER # Append the common footer here
 
-# --- Search Results Page - Changed from f""" to """ ---
+# --- Search Results Page - Uses standard triple quotes for Jinja compatibility ---
 SEARCH_RESULTS_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -247,8 +248,6 @@ SEARCH_RESULTS_HTML = """
                     </div>
                 {% endif %}
 
-                <!-- General Results section removed as requested -->
-
             {% else %}
                 <div class="p-6 rounded-xl shadow-lg bg-white">
                     <p class="text-lg text-gray-600 text-center">No results found for your query. Please try searching for something else.</p>
@@ -283,16 +282,13 @@ def generate_gemini_result(client, query):
                 source_url = attribution[0].web.uri
 
         # Extract title and summary from the generated text
-        # Assuming the model starts with a title followed by a newline or two
         text_content = response.text.strip()
-        lines = text_content.split('\n', 2) # Split into at most 3 parts: Title, maybe blank line, Summary
+        lines = text_content.split('\n', 2)
         
         title = lines[0].strip(' *#') # Clean up markdown formatting
-        summary = text_content # Use the whole text if parsing fails, otherwise the rest
+        summary = text_content
         
         if len(lines) > 1:
-            # Try to find a clear summary after the title
-            # Filter out empty lines between title and summary
             summary = "\n".join(lines[1:]).strip()
             if not summary:
                  summary = text_content # Fallback
@@ -372,19 +368,22 @@ def search():
 
 
 # -------------------------------------------------------------------------
-# Application Run
+# Deployment and Application Run (Modified)
 # -------------------------------------------------------------------------
 
-if __name__ == '__main__':
-    print("----------------------------------------------------------")
-    print("Flask Application Running Locally (via Waitress):")
-    print("Homepage: https://mind-work.onrender.com/")
-    
+def serve_app():
+    """Function to serve the app using Waitress for deployment."""
     # Check the final readiness state before serving
     initial_client = get_gemini_client()
     initial_ready = initial_client is not None
+    print("----------------------------------------------------------")
+    print("Flask Application Starting:")
     print(f"Gemini Status: {'✅ Active' if initial_ready else '❌ Inactive (Set GEMINI_API_KEY)'}")
     print("----------------------------------------------------------")
     
-    from waitress import serve
-    serve(app, host='0.0.0.0', port=5000)
+    # Waitress is used here to serve the application in a production-like way
+    waitress_serve(app, host='0.0.0.0', port=os.environ.get('PORT', 5000))
+
+if __name__ == '__main__':
+    # When running locally via 'python app.py'
+    serve_app()
