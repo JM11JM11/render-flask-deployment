@@ -18,6 +18,7 @@ app = Flask(__name__)
 # Initialize the Gemini Client
 if GEMINI_API_KEY:
     try:
+        # client = genai.Client() is implicit when no API key is provided, but we set it here for explicit control
         client = genai.Client()
         GEMINI_CLIENT_READY = True
         print("Gemini client initialized successfully.")
@@ -31,7 +32,7 @@ else:
     print("Warning: GEMINI_API_KEY not found. Search will use static mock data.")
 
 # -------------------------------------------------------------------------
-# HTML Template Strings (DEFINED BEFORE USE TO RESOLVE PYLANCE ERROR)
+# HTML Template Strings
 # -------------------------------------------------------------------------
 
 LOGIN_FORM_HTML = """
@@ -125,7 +126,7 @@ MINDWORK_HOMEPAGE_HTML = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindWork: Academic Research & Discovery Platform</title>
+    <title>MindWork: General Research & Discovery Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -239,11 +240,11 @@ MINDWORK_HOMEPAGE_HTML = """
                     <div class="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
                         <div class="sm:text-center lg:text-left">
                             <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                                <span class="block xl:inline">Accelerate Academic Discovery</span>
-                                <span class="block text-primary-blue xl:inline"> with AI & Library Integration.</span>
+                                <span class="block xl:inline">Find Everything. Analyze Anything.</span>
+                                <span class="block text-primary-blue xl:inline"> General & AI-Powered Research.</span>
                             </h1>
                             <p class="mt-3 text-base text-gray-600 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                                **MindWork** is the unified research platform designed for students and professors, integrating real-time library access with Google Gemini's advanced analytical capabilities.
+                                **MindWork** is your universal discovery platform, combining wide-ranging web search results with Google Gemini's powerful analytical capabilities for every query.
                             </p>
                               
                             <div class="mt-8 lg:mt-10 mx-auto max-w-lg lg:mx-0">
@@ -284,7 +285,7 @@ MINDWORK_HOMEPAGE_HTML = """
                                         </div>
 
                                         <!-- Search Input: Note the increased left padding (pl-16) -->
-                                        <input type="text" id="site-search" name="query" placeholder="Search academic papers, concepts, or Gemini prompts..."
+                                        <input type="text" id="site-search" name="query" placeholder="Search anything: general topics, media, concepts, or ask Gemini..."
                                                 class="w-full py-3 pl-16 pr-16 border border-gray-300 rounded-xl shadow-xl focus:ring-primary-blue focus:border-primary-blue text-lg text-black transition duration-200"
                                                 required>
                                         
@@ -321,7 +322,7 @@ MINDWORK_HOMEPAGE_HTML = """
             </div>
             <div class="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
                 <img class="h-56 w-full object-cover sm:h-72 md:h-96 lg:w-full lg:h-full" 
-                    src="https://placehold.co/900x600/1f4e79/ffffff?text=Academic+Research+Hub" 
+                    src="https://placehold.co/900x600/1f4e79/ffffff?text=General+Research+Hub" 
                     alt="Mockup of the MindWork research dashboard with graphs and text analysis.">
             </div>
         </div>
@@ -331,10 +332,10 @@ MINDWORK_HOMEPAGE_HTML = """
                 <div class="lg:text-center">
                     <h2 class="text-base text-primary-blue font-semibold tracking-wide uppercase">Methodology</h2>
                     <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                        Tools to Elevate Your Thesis and Papers.
+                        Tools to Explore Any Topic.
                     </p>
                     <p class="mt-4 max-w-2xl text-xl text-gray-600 lg:mx-auto">
-                        Seamlessly transition from discovery to final draft with integrated search, AI analysis, and citation management.
+                        Seamlessly transition from broad discovery to deep analysis with integrated search, AI synthesis, and high-volume results.
                     </p>
                 </div>
 
@@ -348,31 +349,31 @@ MINDWORK_HOMEPAGE_HTML = """
                                 <p class="ml-16 text-lg leading-6 font-medium text-gray-900">AI-Powered Synthesis</p>
                             </dt>
                             <dd class="mt-2 ml-16 text-base text-gray-600">
-                                Leverage Google Gemini to summarize dense articles, outline complex arguments, and generate initial research questions from source material.
+                                Leverage Google Gemini to summarize dense topics, outline complex arguments, and generate initial research questions from any source.
                             </dd>
                         </div>
                         
                         <div class="relative">
                             <dt>
                                 <div class="absolute flex items-center justify-center h-12 w-12 rounded-lg bg-primary-blue text-white">
-                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-library"><path d="m16 2 4 4-4 4"></path><path d="M4.5 13.5h7c.8 0 1.5-.7 1.5-1.5v-7c0-.8-.7-1.5-1.5-1.5h-7c-.8 0-1.5.7-1.5 1.5v7c0 .8.7 1.5 1.5 1.5Z"></path><path d="M9 13v6"></path><path d="M12 19h9"></path></svg>
+                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-globe"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
                                 </div>
-                                <p class="ml-16 text-lg leading-6 font-medium text-gray-900">Integrated Library Search</p>
+                                <p class="ml-16 text-lg leading-6 font-medium text-gray-900">High-Volume Web Search</p>
                             </dt>
                             <dd class="mt-2 ml-16 text-base text-gray-600">
-                                Connect directly to your university's digital library databases and public academic journals, streamlining source retrieval.
+                                Get access to 100+ simulated results for every query, covering news, media, tutorials, and general information.
                             </dd>
                         </div>
 
                         <div class="relative">
                             <dt>
                                 <div class="absolute flex items-center justify-center h-12 w-12 rounded-lg bg-primary-blue text-white">
-                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clipboard-list"><rect width="8" height="4" x="8" y="2"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="m10 13 2 2 4-4"></path></svg>
+                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload-cloud"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v6"></path><path d="m15 15-3 3-3-3"></path></svg>
                                 </div>
-                                <p class="ml-16 text-lg leading-6 font-medium text-gray-900">Automated Citation & Export</p>
+                                <p class="ml-16 text-lg leading-6 font-medium text-gray-900">Multimodal Input</p>
                             </dt>
                             <dd class="mt-2 ml-16 text-base text-gray-600">
-                                Automatically generate citations (MLA, APA, Chicago) and export your research notes and drafts into common word processor formats.
+                                Upload pictures or files to kickstart your research, allowing Gemini to analyze visual or document content directly.
                             </dd>
                         </div>
                     </dl>
@@ -399,7 +400,7 @@ MINDWORK_HOMEPAGE_HTML = """
                 </div>
             </nav>
             <p class="mt-8 text-center text-base text-gray-400">
-                &copy; 2025 MindWork, Inc. Research tools for the modern academic.
+                &copy; 2025 MindWork, Inc. Research tools for the modern explorer.
             </p>
         </div>
     </footer>
@@ -481,12 +482,12 @@ SEARCH_RESULTS_HTML = """
         
         {% if gemini_active %}
         <div class="ai-notice p-4 rounded-lg border mb-8 text-gray-700">
-            🤖 Results include **AI-generated summaries** from Google Gemini and mock academic citations.
+            🤖 Results include **AI-generated summaries** from Google Gemini and **100+ mock web links and analysis**.
         </div>
         {% endif %}
 
         <p class="mb-8 text-lg text-gray-600">
-            Found **{{ results|length }}** relevant academic entries and AI analyses.
+            Found **{{ results|length }}** relevant entries and AI analyses.
         </p>
 
         {% if results %}
@@ -508,7 +509,7 @@ SEARCH_RESULTS_HTML = """
         {% else %}
             <div class="p-8 text-center bg-yellow-50 rounded-lg border border-yellow-200">
                 <p class="text-xl text-yellow-800">
-                    ⚠️ No academic or AI results were found for "{{ query }}".
+                    ⚠️ No results were found for "{{ query }}".
                 </p>
                 <p class="mt-2 text-gray-600">
                     Try a different query or check the console for Gemini API errors.
@@ -524,12 +525,49 @@ SEARCH_RESULTS_HTML = """
 
 
 # -------------------------------------------------------------------------
-# Helper Function for Gemini Search
+# Helper Functions for Search Simulation
 # -------------------------------------------------------------------------
+
+def generate_general_results(query, count=105):
+    """
+    Generates a large, diverse list of mock search results based on the query.
+    """
+    common_subjects = ["Photography", "Cooking", "Travel Guides", "History", "Coding Tutorials", "Fitness", "Personal Finance", "Gardening", "Science News", "Music Theory", "World Events", "Home Decor", "Gaming", "DIY Projects"]
+    common_formats = ["How to", "Best 10", "A Deep Dive into", "The Ultimate Guide to", "Review:", "Top 5 Mistakes in", "Beginner's Guide to", "Quick Start:", "Comprehensive FAQ on"]
+    common_authors = ["Jane Doe", "John Smith", "The Daily Explorer", "Tech Guru", "Culinary Arts", "Historian Guy", "DIY Master", "Financial Freedom Blog"]
+    
+    results = []
+    for i in range(count):
+        subject = random.choice(common_subjects)
+        format_type = random.choice(common_formats)
+        year = random.randint(2015, 2025)
+        
+        # Create a title that includes the query
+        if i < 5:
+             # Ensure the first few results are highly relevant to the core query
+            title = f"The Essential Guide to {query}: History, Use, and Future"
+            source = f"Top-Tier Site {random.randint(1, 3)}"
+        elif i % 5 == 0:
+            title = f"{format_type} {subject}: The Impact of '{query}'"
+            source = f"Specialist Blog {random.randint(1, 10)}"
+        else:
+            title = f"{format_type} {query} in {subject}"
+            source = f"Web Source {random.randint(11, 50)}"
+        
+        results.append({
+            "title": title,
+            "author": random.choice(common_authors),
+            "year": year,
+            "source": source,
+            "summary": f"This article discusses the wide-ranging implications and applications of {query} within the domain of {subject}, providing comprehensive examples and case studies. This is result number {i+1}."
+        })
+    # Remove duplicates which can happen in the first 5 entries
+    return list({v['title']:v for v in results}.values())
+
 
 def generate_gemini_result(client, query):
     """
-    Calls the Gemini API to generate a mock academic paper result.
+    Calls the Gemini API to generate a mock general search result.
     """
     if not client:
         return None
@@ -538,8 +576,8 @@ def generate_gemini_result(client, query):
     if query.lower().startswith("analyze file:"):
         # For a mock, we'll pretend the analysis happened
         file_name = query.split(":")[1].strip()
-        mock_title = f"Preliminary Analysis of '{file_name}'"
-        mock_summary = f"An initial AI-driven summary suggesting key concepts and potential research applications based on the content of the uploaded file/image. Further interactive prompting is recommended."
+        mock_title = f"AI Analysis: Core Concepts from '{file_name}'"
+        mock_summary = f"An initial AI-driven summary suggesting key concepts, visual elements, and potential research applications based on the content of the uploaded file/image. Further interactive prompting is highly recommended."
         return {
             "title": mock_title,
             "author": "Gemini AI",
@@ -550,9 +588,10 @@ def generate_gemini_result(client, query):
 
 
     prompt = (
-        f"Generate a mock academic paper for a research platform based on the user's query: '{query}'. "
-        "The response must be in the format: "
-        "TITLE: [Title]\nAUTHOR: [Author Name]\nYEAR: [Year]\nSOURCE: [Source/Journal Name]\nSUMMARY: [Abstract/Summary of the paper]"
+        f"Generate a mock general web search result for a research platform based on the user's query: '{query}'. "
+        "The result should be highly informative and non-academic (like a Wikipedia entry or a detailed blog post summary). "
+        "The response must be in the exact format: "
+        "TITLE: [Webpage Title]\nAUTHOR: [Website/Creator Name]\nYEAR: [Year]\nSOURCE: [Website URL/Domain]\nSUMMARY: [Snippet/Summary of the content]"
     )
 
     try:
@@ -596,7 +635,7 @@ def generate_gemini_result(client, query):
 
 @app.route('/')
 def home():
-    """Renders the MindWork homepage. The HTML variable is now defined globally."""
+    """Renders the MindWork homepage."""
     return render_template_string(MINDWORK_HOMEPAGE_HTML)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -631,50 +670,42 @@ def google_oauth():
 @app.route('/search', methods=['GET'])
 def search():
     """
-    Handles academic search queries, including a call to Google Gemini.
+    Handles general search queries, returning 100+ mock results and a Gemini summary.
     """
     query = request.args.get('query', '').strip()
-    all_results = []
     
     if not query:
         # Return to homepage if query is empty
         return redirect(url_for('home'))
-    
-    # --- 1. Library Simulation (Mock Data) ---
-    MOCK_DATABASE = [
-        {"title": "The Evolutionary Basis of Consciousness and Life", "author": "Dr. E. Hamilton", "year": 2021, "source": "Journal of Bio-Philosophy", "summary": "An analysis of the conditions required for self-sustaining biological systems and the emergence of sentience, bridging physics and biology."},
-        {"title": "The Meaning of Life: A Comparative Philosophical Study", "author": "P. M. Reynolds", "year": 2018, "source": "Oxford University Press", "summary": "Examines existential, nihilistic, and religious perspectives on purpose, focusing on texts from 19th-century Europe to modern-day Asia."},
-        {"title": "A Guide to Sustainable Urban Life: Planning for 2050", "author": "J. K. Singh", "year": 2023, "source": "Future Studies Quarterly", "summary": "Proposes actionable steps for municipalities to create eco-friendly, energy-efficient, and socially equitable urban environments."}
-    ]
-    
-    # Filter mock data based on query (a real app would use a database)
-    filtered_mock_results = [
-        r for r in MOCK_DATABASE
-        if query.lower() in r['title'].lower() or query.lower() in r['summary'].lower()
-    ]
-    all_results.extend(filtered_mock_results)
 
-    # --- 2. Gemini Generative Result ---
+    # --- 1. General Search Simulation (Generates 100+ Diverse Results) ---
+    all_results = generate_general_results(query, count=105) 
+
+    # --- 2. Gemini Generative Result (The main, featured result) ---
     if GEMINI_CLIENT_READY:
         gemini_result = generate_gemini_result(client, query)
         if gemini_result:
-            all_results.insert(0, gemini_result) # Add the AI result at the top
+            # Insert the single AI result at the very top (index 0)
+            all_results.insert(0, gemini_result) 
         
-    # Shuffle the results (for non-critical results) or keep the AI one at the top
-    if len(all_results) > 1 and GEMINI_CLIENT_READY:
-        # Keep the Gemini result at index 0 and shuffle the rest
-        library_results = all_results[1:]
-        random.shuffle(library_results)
-        all_results = [all_results[0]] + library_results
-    elif len(all_results) > 0 and not GEMINI_CLIENT_READY:
-        # If no Gemini, shuffle all mock results
+    # Shuffle the mock results for variety (excluding the first one if it's the AI result)
+    if GEMINI_CLIENT_READY and len(all_results) > 1:
+        featured_ai = all_results[0]
+        general_results = all_results[1:]
+        random.shuffle(general_results)
+        all_results = [featured_ai] + general_results
+    else:
+        # If no Gemini, shuffle all general results
         random.shuffle(all_results)
-
+    
+    # Ensure a maximum of 100 results are displayed to keep the page size manageable,
+    # though the mock generator produces more than 100.
+    final_results = all_results[:100]
 
     return render_template_string(
         SEARCH_RESULTS_HTML,
         query=query,
-        results=all_results,
+        results=final_results,
         gemini_active=GEMINI_CLIENT_READY
     )
 
