@@ -4,7 +4,6 @@ from flask import Flask, render_template_string, request, redirect, url_for
 # Import the Google GenAI SDK for the LLM call
 from google import genai
 from google.genai.errors import APIError
-from waitress import serve as waitress_serve # Rename to avoid conflict with 'serve()' function
 
 # -------------------------------------------------------------------------
 # Configuration & Client Setup (Refactored for faster startup)
@@ -14,6 +13,7 @@ from waitress import serve as waitress_serve # Rename to avoid conflict with 'se
 # In your terminal, use: export GEMINI_API_KEY="YOUR_API_KEY"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+# Initialize the Flask application object at the module level
 app = Flask(__name__)
 
 # Global variables to hold the client and readiness state
@@ -35,6 +35,7 @@ def get_gemini_client():
     if GEMINI_API_KEY:
         try:
             # The client setup might involve network checks or configuration loading.
+            # No need to pass API key explicitly, the client will look up the environment variable.
             _GEMINI_CLIENT = genai.Client()
             _GEMINI_READY = True
             # Print success message only once upon first use or explicit check
@@ -46,10 +47,8 @@ def get_gemini_client():
     else:
         _GEMINI_CLIENT = None
         _GEMINI_READY = False
-        # Only print warning if key is missing and we haven't already
-        # printed it (controlled by _GEMINI_READY)
-        if _GEMINI_READY is None:
-            print("Warning: GEMINI_API_KEY not found. Search will use static mock data.")
+        # Only print warning if key is missing
+        print("Warning: GEMINI_API_KEY not found. Search will use static mock data.")
 
     return _GEMINI_CLIENT
 
@@ -144,7 +143,6 @@ HOME_HTML = """
                 <h1 class="text-6xl font-extrabold text-blue-800 tracking-tighter mb-2">
                     MindWork
                 </h1>
-                <!-- Removed "General Research Hub" text here -->
             </header>
 
             <form action="/search" method="get" class="flex flex-col space-y-4">
@@ -368,22 +366,16 @@ def search():
 
 
 # -------------------------------------------------------------------------
-# Deployment and Application Run (Modified)
+# Application Run (Local Development Only)
 # -------------------------------------------------------------------------
 
-def serve_app():
-    """Function to serve the app using Waitress for deployment."""
+if __name__ == '__main__':
+    print("----------------------------------------------------------")
+    print("Flask Application Running Locally (Development Server):")
     # Check the final readiness state before serving
     initial_client = get_gemini_client()
     initial_ready = initial_client is not None
-    print("----------------------------------------------------------")
-    print("Flask Application Starting:")
     print(f"Gemini Status: {'✅ Active' if initial_ready else '❌ Inactive (Set GEMINI_API_KEY)'}")
     print("----------------------------------------------------------")
-    
-    # Waitress is used here to serve the application in a production-like way
-    waitress_serve(app, host='0.0.0.0', port=os.environ.get('PORT', 5000))
-
-if __name__ == '__main__':
-    # When running locally via 'python app.py'
-    serve_app()
+    # Use Flask's built-in development server
+    app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))
