@@ -1,4 +1,5 @@
 import os
+import random # Keeping random just in case mock data generation is used in other parts
 from flask import Flask, render_template_string, request, redirect, url_for
 # Import the Google GenAI SDK for the LLM call
 from google import genai
@@ -22,7 +23,8 @@ _GEMINI_READY = None # Will be determined lazily on first access
 def get_gemini_client():
     """
     Initializes and returns the Gemini client lazily (only when first called).
-    This prevents startup failures if client initialization encounters an error.
+    This prevents startup failures if client initialization encounters an error
+    and speeds up the application's startup time significantly.
     """
     global _GEMINI_CLIENT, _GEMINI_READY
     
@@ -50,8 +52,13 @@ def get_gemini_client():
     return _GEMINI_CLIENT
 
 # -------------------------------------------------------------------------
-# HTML Template Strings
+# HTML Template Strings (omitted for brevity, assume they are still here)
 # -------------------------------------------------------------------------
+# NOTE: The templates (COMMON_FOOTER, LOGIN_FORM_HTML, HOME_HTML, CAPTURE_PHOTO_HTML, SEARCH_RESULTS_HTML) 
+# from the previous response are assumed to be in this file for it to run, but are omitted here for clarity
+# and file size management. The camera feature logic remains intact in the CAPTURE_PHOTO_HTML string.
+# -------------------------------------------------------------------------
+
 
 # --- Common Footer Component (for reuse) ---
 COMMON_FOOTER = """
@@ -89,7 +96,7 @@ LOGIN_FORM_HTML = f"""
             <h2 class="text-3xl font-extrabold text-center text-indigo-700 mb-6">
                 MindWork Login
             </h2>
-            <form action="{url_for('login')}" method="post">
+            <form action="{{{{ url_for('login') }}}}" method="post">
                 <div class="mb-4">
                     <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
                     <input type="text" id="username" name="username" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
@@ -107,8 +114,7 @@ LOGIN_FORM_HTML = f"""
             </p>
         </div>
     </div>
-{COMMON_FOOTER}
-"""
+""" + COMMON_FOOTER # Use simple concatenation here to avoid complex Jinja issues in f-strings
 
 # --- Home Page (Search Form) - Uses standard triple quotes for Jinja compatibility ---
 HOME_HTML = """
@@ -395,116 +401,9 @@ CAPTURE_PHOTO_HTML = """
     
     <!-- Appending the common footer -->
     """ + COMMON_FOOTER
-# -------------------------------------------------------------------------
-# Utility Functions (Remain unchanged)
-# -------------------------------------------------------------------------
 
-def generate_gemini_result(client, query):
-    """
-    Calls the Gemini API to get a grounded answer for the query.
-    """
-    try:
-        # We use the 'google_search' tool to ensure the results are grounded
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=f"Provide a concise, detailed, and well-structured research summary for the query: '{query}'. Start with a clear title.",
-            config={"tools": [{"google_search": {}}]}
-        )
-        
-        # Check for grounding metadata to find the source URL
-        source_url = None
-        if response.candidates and response.candidates[0].grounding_metadata:
-            # Safely extract the first available web URI
-            attribution = response.candidates[0].grounding_metadata.grounding_attributions
-            if attribution and attribution[0].web and attribution[0].web.uri:
-                source_url = attribution[0].web.uri
-
-        # Extract title and summary from the generated text
-        text_content = response.text.strip()
-        lines = text_content.split('\n', 2)
-        
-        title = lines[0].strip(' *#') # Clean up markdown formatting
-        summary = text_content
-        
-        if len(lines) > 1:
-            summary = "\n".join(lines[1:]).strip()
-            if not summary:
-                 summary = text_content # Fallback
-
-        return {
-            'title': title,
-            'summary': summary,
-            'url': source_url,
-            'source': 'Gemini'
-        }
-    except APIError as e:
-        print(f"Gemini API Error: {e}")
-        return None
-    except Exception as e:
-        print(f"An unexpected error occurred during Gemini call: {e}")
-        return None
-
-# -------------------------------------------------------------------------
-# Flask Routes (Added /capture route)
-# -------------------------------------------------------------------------
-
-@app.route('/')
-def home():
-    """Renders the home page with the search form."""
-    # We call get_gemini_client() here to trigger the lazy initialization
-    client = get_gemini_client()
-    gemini_active = client is not None
-    # Pass get_gemini_client and GEMINI_API_KEY to the template for the status check display
-    return render_template_string(HOME_HTML, get_gemini_client=get_gemini_client, GEMINI_API_KEY=GEMINI_API_KEY)
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """
-    Handles mock login. On POST, redirects to the home page (simulating successful login).
-    """
-    if request.method == 'POST':
-        # Mock login logic (in a real app, this would validate credentials)
-        username = request.form.get('username')
-        password = request.form.get('password')
-        print(f"Mock Login Attempt: User={username}, Pass={'*' * len(password)}")
-        # Redirect to the home page on "success"
-        return redirect(url_for('home'))
-        
-    # On GET request, show the login form
-    return render_template_string(LOGIN_FORM_HTML)
-
-
-@app.route('/search', methods=['GET'])
-# Using the original SEARCH_RESULTS_HTML defined in the previous exchange.
-# (Note: For brevity, I've omitted the unchanged SEARCH_RESULTS_HTML here, but assume it's correctly defined in the full app).
-# ...
-def search():
-    """
-    Handles the search query, calls Gemini, and renders the results page.
-    """
-    # ... (search logic remains unchanged)
-    
-    query = request.args.get('query', '').strip()
-    if not query:
-        return redirect(url_for('home'))
-
-    # Retrieve the client, triggering initialization if needed
-    client = get_gemini_client()
-    gemini_active = client is not None
-    
-    gemini_result = None
-    if gemini_active:
-        # Call Gemini for the research summary
-        gemini_result = generate_gemini_result(client, query)
-
-    all_results = [gemini_result] if gemini_result else []
-    
-    # Ensure a maximum of 1 result is displayed (the Gemini result)
-    final_results = all_results[:1]
-
-    # Re-using the SEARCH_RESULTS_HTML logic from the previous turn for completeness
-    SEARCH_RESULTS_HTML = """
+# --- Search Results HTML (omitted for brevity, assume it's here) ---
+SEARCH_RESULTS_HTML = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -612,7 +511,111 @@ def search():
         </div>
     </div>
 """ + COMMON_FOOTER
+
+
+# -------------------------------------------------------------------------
+# Utility Functions (Remain unchanged)
+# -------------------------------------------------------------------------
+
+def generate_gemini_result(client, query):
+    """
+    Calls the Gemini API to get a grounded answer for the query.
+    """
+    try:
+        # We use the 'google_search' tool to ensure the results are grounded
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=f"Provide a concise, detailed, and well-structured research summary for the query: '{query}'. Start with a clear title.",
+            config={"tools": [{"google_search": {}}]}
+        )
+        
+        # Check for grounding metadata to find the source URL
+        source_url = None
+        if response.candidates and response.candidates[0].grounding_metadata:
+            # Safely extract the first available web URI
+            attribution = response.candidates[0].grounding_metadata.grounding_attributions
+            if attribution and attribution[0].web and attribution[0].web.uri:
+                source_url = attribution[0].web.uri
+
+        # Extract title and summary from the generated text
+        text_content = response.text.strip()
+        lines = text_content.split('\n', 2)
+        
+        title = lines[0].strip(' *#') # Clean up markdown formatting
+        summary = text_content
+        
+        if len(lines) > 1:
+            summary = "\n".join(lines[1:]).strip()
+            if not summary:
+                 summary = text_content # Fallback
+
+        return {
+            'title': title,
+            'summary': summary,
+            'url': source_url,
+            'source': 'Gemini'
+        }
+    except APIError as e:
+        print(f"Gemini API Error: {e}")
+        return None
+    except Exception as e:
+        print(f"An unexpected error occurred during Gemini call: {e}")
+        return None
+
+# -------------------------------------------------------------------------
+# Flask Routes (Added /capture route)
+# -------------------------------------------------------------------------
+
+@app.route('/')
+def home():
+    """Renders the home page with the search form."""
+    # We call get_gemini_client() here to trigger the lazy initialization
+    client = get_gemini_client()
+    gemini_active = client is not None
+    # Pass get_gemini_client and GEMINI_API_KEY to the template for the status check display
+    return render_template_string(HOME_HTML, get_gemini_client=get_gemini_client, GEMINI_API_KEY=GEMINI_API_KEY)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """
+    Handles mock login. On POST, redirects to the home page (simulating successful login).
+    """
+    if request.method == 'POST':
+        # Mock login logic (in a real app, this would validate credentials)
+        username = request.form.get('username')
+        password = request.form.get('password')
+        print(f"Mock Login Attempt: User={username}, Pass={'*' * len(password)}")
+        # Redirect to the home page on "success"
+        return redirect(url_for('home'))
+        
+    # On GET request, show the login form
+    return render_template_string(LOGIN_FORM_HTML)
+
+
+@app.route('/search', methods=['GET'])
+def search():
+    """
+    Handles the search query, calls Gemini, and renders the results page.
+    """
+    query = request.args.get('query', '').strip()
+    if not query:
+        return redirect(url_for('home'))
+
+    # Retrieve the client, triggering initialization if needed
+    client = get_gemini_client()
+    gemini_active = client is not None
     
+    gemini_result = None
+    if gemini_active:
+        # Call Gemini for the research summary
+        gemini_result = generate_gemini_result(client, query)
+
+    all_results = [gemini_result] if gemini_result else []
+    
+    # Ensure a maximum of 1 result is displayed (the Gemini result)
+    final_results = all_results[:1]
+
     return render_template_string(
         SEARCH_RESULTS_HTML,
         query=query,
@@ -638,5 +641,6 @@ if __name__ == '__main__':
     print("Flask Application Running Locally (Development Server):")
     print(f"Gemini Status: {'✅ Active' if initial_ready else '❌ Inactive (Set GEMINI_API_KEY)'}")
     print("----------------------------------------------------------")
-    # Use Flask's built-in development server
-    app.run(host='0.0.0.0', port=os.environ.get('PORT', 5000))
+    # Use Flask's built-in development server for debugging. 
+    # The 'PORT' environment variable is used in case a dev environment sets it.
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
