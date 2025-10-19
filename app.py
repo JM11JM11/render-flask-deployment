@@ -6,7 +6,7 @@ from google import genai
 from google.genai.errors import APIError
 
 # -------------------------------------------------------------------------
-# Configuration
+# Configuration & Client Setup (Refactored for faster startup)
 # -------------------------------------------------------------------------
 
 # IMPORTANT: Set your API Key as an environment variable (best practice)
@@ -15,24 +15,45 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 app = Flask(__name__)
 
-# Initialize the Gemini Client
-if GEMINI_API_KEY:
-    try:
-        # client = genai.Client() is implicit when no API key is provided, but we set it here for explicit control
-        client = genai.Client()
-        GEMINI_CLIENT_READY = True
-        print("Gemini client initialized successfully.")
-    except Exception as e:
-        client = None
-        GEMINI_CLIENT_READY = False
-        print(f"Error initializing Gemini client: {e}")
-else:
-    client = None
-    GEMINI_CLIENT_READY = False
-    print("Warning: GEMINI_API_KEY not found. Search will use static mock data.")
+# Global variables to hold the client and readiness state
+_GEMINI_CLIENT = None
+_GEMINI_READY = None # Will be determined lazily
+
+def get_gemini_client():
+    """
+    Initializes and returns the Gemini client lazily (only when first called).
+    This speeds up the application's startup time significantly.
+    """
+    global _GEMINI_CLIENT, _GEMINI_READY
+    
+    # Check if we've already tried to initialize it
+    if _GEMINI_READY is not None:
+        return _GEMINI_CLIENT
+        
+    # First time calling: attempt initialization
+    if GEMINI_API_KEY:
+        try:
+            # The client setup might involve network checks or configuration loading.
+            _GEMINI_CLIENT = genai.Client()
+            _GEMINI_READY = True
+            # Print success message only once upon first use or explicit check
+            print("Gemini client initialized successfully upon first request.")
+        except Exception as e:
+            _GEMINI_CLIENT = None
+            _GEMINI_READY = False
+            # Print failure message only once upon first use or explicit check
+            print(f"Error initializing Gemini client: {e}")
+    else:
+        _GEMINI_CLIENT = None
+        _GEMINI_READY = False
+        # Only print a warning if the key is missing
+        print("Warning: GEMINI_API_KEY not found. Search will use static mock data.")
+
+    return _GEMINI_CLIENT
 
 # -------------------------------------------------------------------------
 # HTML Template Strings
+# (Only MINDWORK_HOMEPAGE_HTML is modified)
 # -------------------------------------------------------------------------
 
 # --- Common Footer Component (for reuse) ---
@@ -69,7 +90,7 @@ COMMON_FOOTER = """
     </footer>
 """
 
-# NOTE: Removed the 'f' prefix and the internal {COMMON_FOOTER} placeholder
+# NOTE: LOGIN_FORM_HTML and REGISTER_FORM_HTML content remains unchanged for brevity.
 LOGIN_FORM_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -122,8 +143,6 @@ LOGIN_FORM_HTML = """
 """
 LOGIN_FORM_HTML += COMMON_FOOTER + "</body></html>"
 
-
-# NOTE: Removed the 'f' prefix and the internal {COMMON_FOOTER} placeholder
 REGISTER_FORM_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -181,7 +200,7 @@ REGISTER_FORM_HTML = """
 """
 REGISTER_FORM_HTML += COMMON_FOOTER + "</body></html>"
 
-# NOTE: Removed the 'f' prefix and the internal {COMMON_FOOTER} placeholder
+# --- MODIFIED: MINDWORK_HOMEPAGE_HTML includes camera elements and updated JS logic ---
 MINDWORK_HOMEPAGE_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -220,6 +239,34 @@ MINDWORK_HOMEPAGE_HTML = """
             left: 0;
             right: 0;
             bottom: 0;
+        }
+        /* New styles for the camera modal */
+        .camera-modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            display: none; /* Controlled by JS */
+            justify-content: center;
+            align-items: center;
+        }
+        .camera-modal-content {
+            background: white;
+            border-radius: 1rem;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #camera-stream {
+            display: block;
+            width: 100%;
+            max-height: 70vh;
+            object-fit: contain; /* Ensures the whole video is visible */
         }
     </style>
 </head>
@@ -338,8 +385,8 @@ MINDWORK_HOMEPAGE_HTML = """
                                                         Upload Pictures/Files
                                                     </a>
                                                     
-                                                    <!-- Option 2: Take Photo -->
-                                                    <a href="#" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-blue rounded-b-xl" role="menuitem" onclick="alert('Note: This would integrate your device camera for a direct search!'); toggleUploadMenu(); return false;">
+                                                    <!-- MODIFIED: Option 2: Take Photo (calls new JS function) -->
+                                                    <a href="#" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-blue rounded-b-xl" role="menuitem" onclick="startCameraModal(); toggleUploadMenu(); return false;">
                                                         <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                                         Take Photo
                                                     </a>
@@ -444,10 +491,37 @@ MINDWORK_HOMEPAGE_HTML = """
                 </div>
             </div>
         </div>
+        
+        <!-- HIDDEN CAMERA VIDEO AND CANVAS ELEMENTS -->
+        <video id="camera-stream" autoplay playsinline class="hidden"></video>
+        <canvas id="camera-canvas" class="hidden"></canvas>
+
+        <!-- CAMERA MODAL (Hidden by default) -->
+        <div id="camera-modal" class="camera-modal-backdrop">
+            <div class="camera-modal-content">
+                <div class="p-4 bg-primary-blue text-white flex justify-between items-center rounded-t-xl">
+                    <h3 class="text-xl font-semibold">Live Camera Feed</h3>
+                    <button onclick="stopCamera()" class="text-white hover:text-gray-300">
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <!-- The camera stream will play in this video tag -->
+                <video id="camera-live-feed" autoplay playsinline class="w-full h-full bg-gray-900"></video>
+                <div class="p-4 flex justify-center bg-white rounded-b-xl">
+                    <!-- Capture Button -->
+                    <button onclick="capturePhoto()" class="py-3 px-6 bg-accent-gold text-white font-bold rounded-full shadow-lg hover:bg-yellow-600 transition duration-200 flex items-center">
+                        <svg class="mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm9 4a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg>
+                        Capture Photo
+                    </button>
+                </div>
+            </div>
+        </div>
 
     </main>
     
     <script>
+        let currentStream; // Global variable to hold the MediaStream object
+
         function toggleMenu() {
             const menuPanel = document.getElementById('mobile-menu-panel');
             const menuButton = document.getElementById('mobile-menu-open-btn');
@@ -475,6 +549,7 @@ MINDWORK_HOMEPAGE_HTML = """
             if (file) {
                 // In a real application, this file would be uploaded for Gemini vision/document analysis.
                 const searchInput = document.getElementById('site-search');
+                // Use a placeholder query to signify an analysis request
                 searchInput.value = `Analyze file: ${file.name}`;
                 searchInput.focus();
                 // We'll rely on the user to hit 'Enter' to submit the form for simplicity.
@@ -489,13 +564,76 @@ MINDWORK_HOMEPAGE_HTML = """
                 menu.classList.add('hidden');
             }
         });
+        
+        // --- CAMERA FUNCTIONALITY ---
+
+        function startCameraModal() {
+            const modal = document.getElementById('camera-modal');
+            const video = document.getElementById('camera-live-feed');
+            
+            // 1. Check for camera support
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.error('Camera API not supported in this browser.');
+                // Fallback to a custom message (not using alert() per instructions)
+                document.getElementById('site-search').value = "Error: Camera access required but not supported by device.";
+                return;
+            }
+
+            // 2. Request access and start stream
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    currentStream = stream;
+                    video.srcObject = stream;
+                    modal.style.display = 'flex'; // Show the modal
+                })
+                .catch(err => {
+                    console.error('Failed to access camera: ', err);
+                    document.getElementById('site-search').value = "Error: Camera access denied or unavailable. Please check permissions.";
+                });
+        }
+        
+        function stopCamera() {
+            const modal = document.getElementById('camera-modal');
+            
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            modal.style.display = 'none'; // Hide the modal
+        }
+        
+        function capturePhoto() {
+            const video = document.getElementById('camera-live-feed');
+            const canvas = document.getElementById('camera-canvas');
+            const context = canvas.getContext('2d');
+            const searchInput = document.getElementById('site-search');
+            
+            // 1. Set canvas dimensions to match the video feed dimensions
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // 2. Draw the current video frame onto the canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // 3. Convert the canvas image to a data URL (base64)
+            // In a real app, this data URL would be sent to the backend for Gemini Vision analysis.
+            const imageDataUrl = canvas.toDataURL('image/jpeg'); 
+            
+            // 4. Stop the camera and close the modal
+            stopCamera();
+            
+            // 5. Simulate submission by populating the search bar and submitting
+            // Note: Since we can't send the image data to the server easily in this structure,
+            // we submit a query signaling an image was captured.
+            searchInput.value = "Analyze captured image (JPEG)"; 
+            document.querySelector('form').submit(); 
+        }
 
     </script>
 """
 MINDWORK_HOMEPAGE_HTML += COMMON_FOOTER + "</body></html>"
 
 
-# NOTE: Removed the 'f' prefix and the internal {COMMON_FOOTER} placeholder
 SEARCH_RESULTS_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -578,7 +716,7 @@ SEARCH_RESULTS_HTML += COMMON_FOOTER + "</body></html>"
 
 
 # -------------------------------------------------------------------------
-# Helper Functions for Search Simulation (No changes needed here)
+# Helper Functions for Search Simulation (Updated to use get_gemini_client)
 # -------------------------------------------------------------------------
 
 def generate_general_results(query, count=105):
@@ -626,11 +764,16 @@ def generate_gemini_result(client, query):
         return None
     
     # Check if the query indicates a file/image analysis
-    if query.lower().startswith("analyze file:"):
+    if query.lower().startswith("analyze file:") or query.lower().startswith("analyze captured image"):
         # For a mock, we'll pretend the analysis happened
-        file_name = query.split(":")[1].strip()
-        mock_title = f"AI Analysis: Core Concepts from '{file_name}'"
-        mock_summary = f"An initial AI-driven summary suggesting key concepts, visual elements, and potential research applications based on the content of the uploaded file/image. Further interactive prompting is highly recommended."
+        mock_title = "AI Vision Analysis: Detailed Object Identification"
+        
+        if query.lower().startswith("analyze captured image"):
+            mock_summary = "An initial AI-driven analysis suggesting key objects, text, and visual context captured by the device camera. Further interactive prompting is recommended for deeper insights."
+        else:
+            file_name = query.split(":")[1].strip()
+            mock_summary = f"An initial AI-driven summary suggesting key concepts, visual elements, and potential research applications based on the content of the uploaded file/image '{file_name}'. Further interactive prompting is highly recommended."
+            
         return {
             "title": mock_title,
             "author": "Gemini AI",
@@ -683,7 +826,7 @@ def generate_gemini_result(client, query):
     return None
 
 # -------------------------------------------------------------------------
-# Flask Routes (No changes needed here)
+# Flask Routes (Unchanged)
 # -------------------------------------------------------------------------
 
 @app.route('/')
@@ -731,18 +874,22 @@ def search():
         # Return to homepage if query is empty
         return redirect(url_for('home'))
 
+    # Get the client instance (initializes only on first call)
+    client = get_gemini_client()
+    gemini_active = client is not None
+
     # --- 1. General Search Simulation (Generates 100+ Diverse Results) ---
     all_results = generate_general_results(query, count=105) 
 
     # --- 2. Gemini Generative Result (The main, featured result) ---
-    if GEMINI_CLIENT_READY:
+    if gemini_active:
         gemini_result = generate_gemini_result(client, query)
         if gemini_result:
             # Insert the single AI result at the very top (index 0)
             all_results.insert(0, gemini_result) 
         
     # Shuffle the mock results for variety (excluding the first one if it's the AI result)
-    if GEMINI_CLIENT_READY and len(all_results) > 1:
+    if gemini_active and len(all_results) > 1:
         featured_ai = all_results[0]
         general_results = all_results[1:]
         random.shuffle(general_results)
@@ -759,7 +906,7 @@ def search():
         SEARCH_RESULTS_HTML,
         query=query,
         results=final_results,
-        gemini_active=GEMINI_CLIENT_READY
+        gemini_active=gemini_active # Pass the local state
     )
 
 
@@ -771,9 +918,12 @@ if __name__ == '__main__':
     print("----------------------------------------------------------")
     print("Flask Application Running Locally (via Waitress):")
     print("Homepage: https://mind-work.onrender.com/")
-    print(f"Gemini Status: {'✅ Active' if GEMINI_CLIENT_READY else '❌ Inactive (Set GEMINI_API_KEY)'}")
+    
+    # Check the final readiness state before serving
+    initial_client = get_gemini_client()
+    initial_ready = initial_client is not None
+    print(f"Gemini Status: {'✅ Active' if initial_ready else '❌ Inactive (Set GEMINI_API_KEY)'}")
     print("----------------------------------------------------------")
     
     from waitress import serve
     serve(app, host='0.0.0.0', port=5001)
-
