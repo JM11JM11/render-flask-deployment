@@ -52,7 +52,7 @@ def get_gemini_client():
     return _GEMINI_CLIENT
 
 # -------------------------------------------------------------------------
-# HTML Template Strings (UPDATED LOGO AND FUNCTIONALITY)
+# HTML Template Strings (UPDATED LOGO SPACING)
 # -------------------------------------------------------------------------
 
 # --- Common Footer Component (for reuse) ---
@@ -89,7 +89,7 @@ COMMON_FOOTER = """
     </footer>
 """
 
-# --- MODIFIED: LOGIN_FORM_HTML ---
+# --- MODIFIED: LOGIN_FORM_HTML (Updated mr-3) ---
 LOGIN_FORM_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -138,16 +138,16 @@ LOGIN_FORM_HTML = """
             <a href="/register" class="text-sm text-[#1f4e79] hover:text-blue-700">Don't have an account? Register</a>
         </div>
         <hr class="my-4">
-        <!-- MODIFIED: Log In with Google Button -->
+        <!-- MODIFIED: Log In with Google Button - Logo aligned and using mr-3 -->
         <button onclick="startMockGoogleAuth('Log In')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-            <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
+            <img class="h-5 w-5 mr-3" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
             Log In with Google
         </button>
     </div>
 """
 LOGIN_FORM_HTML += COMMON_FOOTER + "</body></html>"
 
-# --- MODIFIED: REGISTER_FORM_HTML ---
+# --- MODIFIED: REGISTER_FORM_HTML (Updated mr-3) ---
 REGISTER_FORM_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -201,16 +201,16 @@ REGISTER_FORM_HTML = """
             <a href="/login" class="text-sm text-[#1f4e79] hover:text-blue-700">Already have an account? Log In</a>
         </div>
         <hr class="my-4">
-        <!-- MODIFIED: Sign Up with Google Button -->
+        <!-- MODIFIED: Sign Up with Google Button - Logo aligned and using mr-3 -->
         <button onclick="startMockGoogleAuth('Sign Up')" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-            <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
+            <img class="h-5 w-5 mr-3" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
             Sign Up with Google
         </button>
     </div>
 """
 REGISTER_FORM_HTML += COMMON_FOOTER + "</body></html>"
 
-# --- MODIFIED: MINDWORK_HOMEPAGE_HTML ---
+# --- MODIFIED: MINDWORK_HOMEPAGE_HTML (Confirming logo alignment) ---
 MINDWORK_HOMEPAGE_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -430,7 +430,7 @@ MINDWORK_HOMEPAGE_HTML = """
                                     </a>
                                 </div>
                                 <div class="mt-3 sm:mt-0 sm:ml-3 rounded-lg shadow-xl w-full sm:w-auto">
-                                    <!-- MODIFIED: Sign Up with Google Button with corrected flex/logo alignment -->
+                                    <!-- CONFIRMED: Sign Up with Google Button with correct flex/logo alignment (mr-3) -->
                                     <button onclick="startMockGoogleAuth('Sign Up')" class="w-full flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-300">
                                         <img class="h-5 w-5 mr-3" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
                                         Sign Up with Google
