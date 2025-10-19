@@ -35,6 +35,52 @@ else:
 CONTACT_EMAIL = "Mesadieujohnm01@gmail.com"
 
 # -------------------------------------------------------------------------
+# HTML Template Components (Updated Footer)
+# -------------------------------------------------------------------------
+
+# CONTACT/REPORT SECTION TEMPLATE (Used in all main HTML pages)
+CONTACT_FOOTER_SECTION = f"""
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 bg-gray-900">
+        <div class="text-center">
+            <h3 class="text-xl font-semibold text-white mb-2">Contact / Report an Issue</h3>
+            <p class="text-base text-gray-400">
+                For support, feature requests, or to report an issue, please contact:
+                <a href="mailto:{CONTACT_EMAIL}" class="text-blue-400 hover:text-blue-300 transition duration-150">
+                    {CONTACT_EMAIL}
+                </a>
+            </p>
+        </div>
+    </div>
+"""
+
+# The existing footer is placed after the new contact section for aesthetic separation.
+BASE_FOOTER_HTML = f"""
+    {CONTACT_FOOTER_SECTION}
+    <footer class="bg-gray-800">
+        <div class="max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8">
+            <nav class="-mx-5 -my-2 flex flex-wrap justify-center" aria-label="Footer">
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Terms of Use</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Privacy Policy</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Support</a>
+                </div>
+                <div class="px-5 py-2">
+                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Accessibility</a>
+                </div>
+            </nav>
+            <p class="mt-8 text-center text-base text-gray-400">
+                &copy; 2025 MindWork, Inc. Research tools for the modern explorer.
+            </p>
+        </div>
+    </footer>
+"""
+
+
+# -------------------------------------------------------------------------
 # HTML Template Strings (DEFINITIONS ADDED TO FIX PYLANCE ERRORS)
 # -------------------------------------------------------------------------
 
@@ -151,13 +197,6 @@ SEARCH_RESULTS_HTML = """
             
             <h1 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">Search Results for: "<span class="text-primary-blue">{{ query }}</span>"</h1>
             
-            {% if not gemini_active %}
-                <div class="p-4 mb-6 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-lg" role="alert">
-                    <p class="font-bold">Gemini API Key Missing/Inactive</p>
-                    <p>The featured AI result is unavailable. Set your GEMINI_API_KEY environment variable to enable this feature.</p>
-                </div>
-            {% endif %}
-
             {% if results %}
                 <div class="space-y-8">
                     {% for result in results %}
@@ -196,61 +235,16 @@ SEARCH_RESULTS_HTML = """
 
 
 # -------------------------------------------------------------------------
-# HTML Template Components (Updated Footer)
-# -------------------------------------------------------------------------
-
-# CONTACT/REPORT SECTION TEMPLATE (Used in all main HTML pages)
-CONTACT_FOOTER_SECTION = f"""
-    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 bg-gray-900">
-        <div class="text-center">
-            <h3 class="text-xl font-semibold text-white mb-2">Contact / Report an Issue</h3>
-            <p class="text-base text-gray-400">
-                For support, feature requests, or to report an issue, please contact:
-                <a href="mailto:{CONTACT_EMAIL}" class="text-blue-400 hover:text-blue-300 transition duration-150">
-                    {CONTACT_EMAIL}
-                </a>
-            </p>
-        </div>
-    </div>
-"""
-
-# The existing footer is placed after the new contact section for aesthetic separation.
-BASE_FOOTER_HTML = f"""
-    {CONTACT_FOOTER_SECTION}
-    <footer class="bg-gray-800">
-        <div class="max-w-7xl mx-auto py-8 px-4 overflow-hidden sm:px-6 lg:px-8">
-            <nav class="-mx-5 -my-2 flex flex-wrap justify-center" aria-label="Footer">
-                <div class="px-5 py-2">
-                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Terms of Use</a>
-                </div>
-                <div class="px-5 py-2">
-                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Privacy Policy</a>
-                </div>
-                <div class="px-5 py-2">
-                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Support</a>
-                </div>
-                <div class="px-5 py-2">
-                    <a href="#" class="text-base text-gray-300 hover:text-white transition duration-150">Accessibility</a>
-                </div>
-            </nav>
-            <p class="mt-8 text-center text-base text-gray-400">
-                &copy; 2025 MindWork, Inc. Research tools for the modern explorer.
-            </p>
-        </div>
-    </footer>
-"""
-
-
-# -------------------------------------------------------------------------
-# HTML Template Strings (Updated)
+# HTML Template Strings (Replacement Logic)
 # -------------------------------------------------------------------------
 
 # The replacement logic now works because the variables are defined above.
 LOGIN_FORM_HTML = LOGIN_FORM_HTML.replace("</body>", f"{BASE_FOOTER_HTML}</body>")
 REGISTER_FORM_HTML = REGISTER_FORM_HTML.replace("</body>", f"{BASE_FOOTER_HTML}</body>")
 
-
-# MINDWORK_HOMEPAGE_HTML (RETAINED FROM PREVIOUS RESPONSE)
+# MINDWORK_HOMEPAGE_HTML is now defined to not include the {BASE_FOOTER_HTML} variable 
+# directly in the string content, but appended using .replace() to ensure correct placement.
+# This prevents the raw text from showing up on the homepage.
 MINDWORK_HOMEPAGE_HTML = """
 <!DOCTYPE html>
 <html lang="en">
@@ -499,8 +493,6 @@ MINDWORK_HOMEPAGE_HTML = """
 
     </main>
 
-    {BASE_FOOTER_HTML}
-
     <script>
         function toggleMenu() {
             const menuPanel = document.getElementById('mobile-menu-panel');
@@ -549,9 +541,13 @@ MINDWORK_HOMEPAGE_HTML = """
 </body>
 </html>
 """
+# APPEND BASE_FOOTER_HTML TO HOMEPAGE (FIXING THE RAW TEXT ISSUE)
+MINDWORK_HOMEPAGE_HTML = MINDWORK_HOMEPAGE_HTML.replace("</body>", f"{BASE_FOOTER_HTML}</body>")
+
 
 # SEARCH_RESULTS_HTML just needs the updated footer
 SEARCH_RESULTS_HTML = SEARCH_RESULTS_HTML.replace("</body>", f"{BASE_FOOTER_HTML}</body>")
+
 
 # -------------------------------------------------------------------------
 # Helper Functions for Search Simulation (Updated)
