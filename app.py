@@ -750,11 +750,9 @@ def search():
 if __name__ == '__main__':
     print("----------------------------------------------------------")
     print("Flask Application Running Locally (via Waitress):")
-    print("Homepage: http://0.0.0.0:5001")
+    print("Homepage: https://mind-work.onrender.com")
     print(f"Gemini Status: {'✅ Active' if GEMINI_CLIENT_READY else '❌ Inactive (Set GEMINI_API_KEY)'}")
     print("----------------------------------------------------------")
     
     from waitress import serve
-    serve(app, host='0.0.0.0', port=5001)
-
-
+    serve(app, host='0.0.0.0', port=5002)
