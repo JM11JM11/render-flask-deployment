@@ -16,6 +16,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 app = Flask(__name__)
 
 # Initialize the Gemini Client
+client = None
+GEMINI_CLIENT_READY = False
 if GEMINI_API_KEY:
     try:
         # client = genai.Client() is implicit when no API key is provided, but we set it here for explicit control
@@ -23,12 +25,8 @@ if GEMINI_API_KEY:
         GEMINI_CLIENT_READY = True
         print("Gemini client initialized successfully.")
     except Exception as e:
-        client = None
-        GEMINI_CLIENT_READY = False
         print(f"Error initializing Gemini client: {e}")
 else:
-    client = None
-    GEMINI_CLIENT_READY = False
     print("Warning: GEMINI_API_KEY not found. Search will use static mock data.")
 
 # Global contact email
@@ -740,15 +738,17 @@ def search():
 
 
 # -------------------------------------------------------------------------
-# Application Run
+# Application Run (FIXED FOR FASTER LOCAL DEVELOPMENT)
 # -------------------------------------------------------------------------
 
 if __name__ == '__main__':
     print("----------------------------------------------------------")
-    print("Flask Application Running Locally (via Waitress):")
-    print("Homepage: https://mind-work.onrender.com")
+    print("Flask Application Running Locally (via built-in server):")
+    print("https://mind-work.onrender.com")
     print(f"Gemini Status: {'✅ Active' if GEMINI_CLIENT_READY else '❌ Inactive (Set GEMINI_API_KEY)'}")
     print("----------------------------------------------------------")
     
-    from waitress import serve
-    serve(app, host='0.0.0.0', port=5002)
+    # Removed the use of 'waitress.serve' which can sometimes be slower to start 
+    # or less suited for local development environments, and replaced it with 
+    # the standard, faster-to-start Flask development server.
+    app.run(host='0.0.0.0', port=5002, debug=True)
