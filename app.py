@@ -770,6 +770,9 @@ def search():
     # 3. Combine results
     all_results.extend(general_results)
     
+    # 4. Sort results so the Gemini result is always first
+    all_results.sort(key=lambda x: x['author'] != 'Gemini AI')
+    
     # Render the search results page
     return render_template_string(SEARCH_RESULTS_HTML, query=query, results=all_results)
 
@@ -791,4 +794,5 @@ def article(slug):
 
 if __name__ == '__main__':
     # Flask runs on 0.0.0.0 on Render
-    app.run(debug=True, host='0.0.0.0', port=os.environ.get('PORT', 5000))
+    # *** THIS LINE IS CRUCIAL: It sets the default port to 5001 ***
+    app.run(debug=True, host='0.0.0.0', port=os.environ.get('PORT', 5001))
