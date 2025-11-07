@@ -15,8 +15,6 @@ from google.genai.errors import APIError
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 app = Flask(__name__)
-# Set debug mode to True to see the traceback in the browser
-app.config['DEBUG'] = True
 
 # Initialize the Gemini Client
 client = None
@@ -346,119 +344,6 @@ ARTICLE_PAGE_HTML = """
 </html>
 """
 
-# The following is the correct definition for MINDWORK_HOMEPAGE_HTML, 
-# which was incomplete or missing in your previous post and could cause a render error.
-MINDWORK_HOMEPAGE_HTML = """
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MindWork: General Research & Discovery Platform</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        'primary-blue': '#1f4e79', /* Deep Navy */
-                        'secondary-gray': '#f3f4f6',
-                        'accent-gold': '#d9a400', /* Gold for academic accent */
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #ffffff;
-        }
-        .hero-background-pattern {
-            background-image: radial-gradient(#d4d4d8 1px, transparent 0);
-            background-size: 30px 30px;
-            opacity: 0.5;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-        }
-    </style>
-</head>
-<body class="antialiased">
-
-    <header class="sticky top-0 z-50 bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center py-4 md:justify-start md:space-x-10">
-                <div class="flex justify-start lg:w-0 lg:flex-1">
-                    <a href="/" class="text-2xl font-extrabold text-primary-blue">
-                        MindWork
-                    </a>
-                </div>
-
-                <nav class="hidden md:flex space-x-10">
-                    <a href="#" class="text-base font-medium text-gray-500 hover:text-primary-blue transition duration-150">Features</a>
-                    <a href="#" class="text-base font-medium text-gray-500 hover:text-primary-blue transition duration-150">News</a>
-                    <a href="#" class="text-base font-medium text-gray-500 hover:text-primary-blue transition duration-150">About</a>
-                    <a href="#" class="text-base font-medium text-gray-500 hover:text-primary-blue transition duration-150">Support</a>
-                </nav>
-
-                <div class="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
-                    <a href="/login" class="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-lg text-base font-medium text-white bg-primary-blue hover:bg-blue-800 transition duration-300">
-                        Login / Sign Up
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <main class="relative isolate pt-14">
-        <div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
-            <div class="hero-background-pattern"></div>
-        </div>
-
-        <div class="py-24 sm:py-32 lg:pb-40">
-            <div class="mx-auto max-w-7xl px-6 lg:px-8">
-                <div class="mx-auto max-w-2xl text-center">
-                    <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-                        Research Simplified. <span class="text-primary-blue">AI Enhanced.</span>
-                    </h1>
-                    <p class="mt-6 text-lg leading-8 text-gray-600">
-                        Search anything: academic papers, media analysis, concepts, or use Gemini's powerful analytical capabilities.
-                    </p>
-                    
-                    <div class="mt-10">
-                        <form method="GET" action="/search" class="max-w-xl mx-auto">
-                            <label for="main-search" class="sr-only">Search MindWork</label>
-                            <div class="relative">
-                                <input type="text" id="main-search" name="query" placeholder="Search anything: general topics, media, concepts, or ask Gemini..."
-                                       class="w-full py-4 pl-6 pr-16 border border-gray-300 rounded-full shadow-2xl focus:ring-primary-blue focus:border-primary-blue text-xl text-black transition duration-300"
-                                       required>
-                                <button type="submit" class="absolute right-0 top-0 bottom-0 px-6 flex items-center bg-primary-blue rounded-r-full text-white hover:bg-blue-800 transition duration-300">
-                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="mt-4 text-sm text-gray-500">
-                        Try queries like: "future of renewable energy", "analysis of the latest space telescope images", or "how to make sourdough bread".
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-</body>
-</html>
-"""
-
-
 # -------------------------------------------------------------------------
 # HTML Template Strings (Replacement Logic)
 # -------------------------------------------------------------------------
@@ -467,7 +352,7 @@ MINDWORK_HOMEPAGE_HTML = """
 LOGIN_FORM_HTML = LOGIN_FORM_HTML.replace("</body>", f"{BASE_FOOTER_HTML}</body>")
 REGISTER_FORM_HTML = REGISTER_FORM_HTML.replace("</body>", f"{BASE_FOOTER_HTML}</body>")
 ARTICLE_PAGE_HTML = ARTICLE_PAGE_HTML.replace("</body>", f"{BASE_FOOTER_HTML}</body>")
-MINDWORK_HOMEPAGE_HTML = MINDWORK_HOMEPAGE_HTML.replace("</body>", f"{BASE_FOOTER_HTML}</body>")
+# MINDWORK_HOMEPAGE_HTML and SEARCH_RESULTS_HTML will be handled in the final code block.
 
 
 # -------------------------------------------------------------------------
@@ -635,112 +520,421 @@ def generate_gemini_result(client, query):
 # Flask Routes (Updated)
 # -------------------------------------------------------------------------
 
-# MOCK QUERY SUFFIXES: Use a list of suffixes to skip the Gemini call during development.
-MOCK_QUERY_SUFFIXES = ['mock', 'static', 'test']
-
 @app.route('/')
 def home():
     """Renders the MindWork homepage."""
+    # Ensure MINDWORK_HOMEPAGE_HTML is defined or imported before use
+    MINDWORK_HOMEPAGE_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindWork: General Research & Discovery Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary-blue': '#1f4e79', /* Deep Navy */
+                        'secondary-gray': '#f3f4f6',
+                        'accent-gold': '#d9a400', /* Gold for academic accent */
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+        }
+        .hero-background-pattern {
+            background-image: radial-gradient(#d4d4d8 1px, transparent 0);
+            background-size: 30px 30px;
+            opacity: 0.5;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="sticky top-0 z-50 bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4 md:justify-start md:space-x-10">
+                <div class="flex justify-start lg:w-0 lg:flex-1">
+                    <a href="/" class="text-2xl font-extrabold text-primary-blue">
+                        MindWork
+                    </a>
+                </div>
+
+                <div class="-mr-2 -my-2 md:hidden">
+                    <button id="mobile-menu-open-btn" type="button" onclick="toggleMenu()" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-700 hover:text-primary-blue hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-blue" aria-expanded="false" aria-controls="mobile-menu-panel">
+                        <span class="sr-only">Open menu</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
+
+                <nav class="hidden md:flex space-x-10">
+                    <a href="#" class="text-base font-medium text-gray-500 hover:text-primary-blue transition duration-150">Features</a>
+                    <a href="#" class="text-base font-medium text-gray-500 hover:text-primary-blue transition duration-150">News</a>
+                    <a href="#" class="text-base font-medium text-gray-500 hover:text-primary-blue transition duration-150">About</a>
+                    <a href="#" class="text-base font-medium text-gray-500 hover:text-primary-blue transition duration-150">Support</a>
+                </nav>
+
+                <div class="hidden md:flex items-center justify-end md:flex-1 lg:w-0">
+                    <a href="/login" class="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-lg text-base font-medium text-white bg-primary-blue hover:bg-blue-800 transition duration-300">
+                        Login / Sign Up
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobile-menu-panel" class="md:hidden transition-all duration-300 ease-out max-h-0 overflow-hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-menu-open-btn">
+            <div class="rounded-b-lg shadow-2xl ring-1 ring-black ring-opacity-5 bg-white divide-y-2 divide-gray-50">
+                <div class="pt-5 pb-6 px-5">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-xl font-extrabold text-primary-blue">MindWork</span>
+                        </div>
+                        <div class="-mr-2">
+                            <button type="button" onclick="toggleMenu()" class="bg-white rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-blue">
+                                <span class="sr-only">Close menu</span>
+                                <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <nav class="grid gap-y-8">
+                            <a href="#" class="-m-3 p-3 flex items-center rounded-lg hover:bg-gray-50">Features</a>
+                            <a href="#" class="-m-3 p-3 flex items-center rounded-lg hover:bg-gray-50">News</a>
+                            <a href="#" class="-m-3 p-3 flex items-center rounded-lg hover:bg-gray-50">About</a>
+                            <a href="#" class="-m-3 p-3 flex items-center rounded-lg hover:bg-gray-50">Support</a>
+                        </nav>
+                    </div>
+                </div>
+                <div class="py-6 px-5 space-y-6">
+                    <div>
+                        <a href="/login" class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-primary-blue hover:bg-blue-800">
+                            Login / Sign Up
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="bg-white">
+        <div class="relative overflow-hidden bg-white">
+            <div class="hero-background-pattern"></div>
+            <div class="max-w-7xl mx-auto py-12 sm:py-24 lg:py-32">
+                <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    
+                    <h1 class="text-5xl tracking-tight font-extrabold text-gray-900 sm:text-6xl md:text-7xl">
+                        <span class="block text-primary-blue">MindWork Research</span>
+                        <span class="block text-gray-900 mt-2">AI-Powered Discovery</span> 
+                    </h1>
+                    <p class="mt-4 text-xl text-gray-600 sm:mt-5 sm:max-w-xl sm:mx-auto">
+                        Your universal platform for research, combining general web search with Google Gemini's analytical capabilities.
+                    </p>
+                      
+                    <div class="mt-10 mx-auto max-w-4xl">
+                        <form method="GET" action="/search">
+                            <label for="site-search" class="sr-only">Search the MindWork Research Hub</label>
+                            <div class="relative flex items-center">
+                                <div class="absolute left-0 top-0 bottom-0 z-10">
+                                    <div class="h-full flex items-center pl-3">
+                                        <button type="button" id="upload-menu-button" onclick="toggleUploadMenu(event)" 
+                                                class="p-1 text-primary-blue rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-blue transition duration-200">
+                                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <div id="upload-menu" class="origin-top-left absolute left-0 mt-1 w-64 rounded-xl shadow-2xl bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 hidden z-20" role="menu" aria-orientation="vertical" aria-labelledby="upload-menu-button">
+                                        <div class="py-1" role="none">
+                                            <input type="file" id="file-upload-input" accept="image/*, .pdf, .docx, .txt" class="hidden" onchange="handleFileUpload(event)">
+                                            
+                                            <a href="#" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-blue rounded-t-xl" role="menuitem" onclick="document.getElementById('file-upload-input').click(); toggleUploadMenu(); return false;">
+                                                <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                                                Upload Pictures/Files
+                                            </a>
+                                            
+                                            <a href="#" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 hover:text-primary-blue rounded-b-xl" role="menuitem" onclick="alert('Accessing device camera... (Implementation needed)'); toggleUploadMenu(); return false;">
+                                                <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                                                Camera: Give Access
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <input type="text" id="site-search" name="query" placeholder="Search anything: general topics, media, concepts, or ask Gemini..."
+                                        class="w-full py-3 pl-16 pr-16 border border-gray-300 rounded-xl shadow-xl focus:ring-primary-blue focus:border-primary-blue text-lg text-black transition duration-200"
+                                        required>
+                                
+                                <button type="submit" class="absolute right-0 top-0 bottom-0 px-4 flex items-center text-primary-blue hover:text-blue-800 transition duration-200">
+                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="mt-8 sm:mt-12 flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-3">
+                        <div class="rounded-lg shadow-xl w-full sm:w-auto">
+                            <a href="/login" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-primary-blue hover:bg-blue-800 md:py-4 md:text-lg md:px-10 transition duration-300">
+                                Log In to MindWork
+                            </a>
+                        </div>
+                        <div class="mt-3 sm:mt-0 sm:ml-3 rounded-lg shadow-xl w-full sm:w-auto">
+                            <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-lg text-primary-blue bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-300">
+                                Create Account
+                            </a>
+                        </div>
+                        <div class="mt-3 sm:mt-0 sm:ml-3 rounded-lg shadow-xl w-full sm:w-auto">
+                            <a href="/oauth/google" class="w-full flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-300">
+                                <img class="h-5 w-5 mr-2" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Logo_and_wordmark_of_Google.svg" alt="Google logo">
+                                Sign Up with Google
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="py-12 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-base text-primary-blue font-semibold tracking-wide uppercase">Methodology</h2>
+                    <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                        Tools to Explore Any Topic.
+                    </p>
+                    <p class="mt-4 max-w-2xl text-xl text-gray-600 lg:mx-auto">
+                        Seamlessly transition from broad discovery to deep analysis with integrated search, AI synthesis, and high-volume results.
+                    </p>
+                </div>
+
+                <div class="mt-10">
+                    <dl class="space-y-10 md:space-y-0 md:grid md:grid-cols-3 md:gap-x-8 md:gap-y-10">
+                        <div class="relative">
+                            <dt>
+                                <div class="absolute flex items-center justify-center h-12 w-12 rounded-lg bg-primary-blue text-white">
+                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain"><path d="M15.5 17a5 5 0 0 0-5 5H4a2 2 0 0 1-2-2v-1A7 7 0 0 1 9 10a7 7 0 0 0 6.5-3.5 6 6 0 0 0-11-2.5 6 6 0 0 0-2.5 7.7.7.7 0 0 1-.7.2 2 2 0 0 0-1.7 1.5 5 5 0 0 0 6.7 3.6 5 5 0 0 0 5-5z"></path></svg>
+                                </div>
+                                <p class="ml-16 text-lg leading-6 font-medium text-gray-900">AI-Powered Synthesis</p>
+                            </dt>
+                            <dd class="mt-2 ml-16 text-base text-gray-600">
+                                Leverage Google Gemini to summarize dense topics, outline complex arguments, and generate initial research questions, **providing the same results as Google Gemini for research purposes**.
+                            </dd>
+                        </div>
+                        
+                        <div class="relative">
+                            <dt>
+                                <div class="absolute flex items-center justify-center h-12 w-12 rounded-lg bg-primary-blue text-white">
+                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-globe"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                                </div>
+                                <p class="ml-16 text-lg leading-6 font-medium text-gray-900">High-Volume Web Search</p>
+                            </dt>
+                            <dd class="mt-2 ml-16 text-base text-gray-600">
+                                Get access to 100+ simulated results for every query, covering news, media, tutorials, and general information.
+                            </dd>
+                        </div>
+
+                        <div class="relative">
+                            <dt>
+                                <div class="absolute flex items-center justify-center h-12 w-12 rounded-lg bg-primary-blue text-white">
+                                    <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload-cloud"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v6"></path><path d="m15 15-3 3-3-3"></path></svg>
+                                </div>
+                                <p class="ml-16 text-lg leading-6 font-medium text-gray-900">Multimodal Input</p>
+                            </dt>
+                            <dd class="mt-2 ml-16 text-base text-gray-600">
+                                Upload pictures or files to kickstart your research, allowing Gemini to analyze visual or document content directly.
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function toggleMenu() {
+            const menuPanel = document.getElementById('mobile-menu-panel');
+            const menuButton = document.getElementById('mobile-menu-open-btn');
+
+            if (menuPanel.classList.contains('max-h-0')) {
+                menuPanel.classList.remove('max-h-0', 'overflow-hidden');
+                menuPanel.classList.add('max-h-screen');
+                menuButton.setAttribute('aria-expanded', 'true');
+            } else {
+                menuPanel.classList.add('max-h-0', 'overflow-hidden');
+                menuPanel.classList.remove('max-h-screen');
+                menuButton.setAttribute('aria-expanded', 'false');
+            }
+        }
+
+        function toggleUploadMenu(event) {
+            // Stops the click from bubbling up and immediately closing the menu
+            if (event) event.stopPropagation(); 
+            const menu = document.getElementById('upload-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // The search query now only reflects the file name
+                const searchInput = document.getElementById('site-search');
+                searchInput.value = `${file.name}`;
+                searchInput.focus();
+                // We'll rely on the user to hit 'Enter' to submit the form for simplicity.
+            }
+        }
+        
+        // Closes the menu if the user clicks anywhere outside of the button or the menu itself
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('upload-menu');
+            const button = document.getElementById('upload-menu-button');
+            if (menu && button && !menu.contains(event.target) && !button.contains(event.target) && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        });
+
+    </script>
+
+</body>
+</html>
+"""
+    MINDWORK_HOMEPAGE_HTML = MINDWORK_HOMEPAGE_HTML.replace("</body>", f"{BASE_FOOTER_HTML}</body>")
     return render_template_string(MINDWORK_HOMEPAGE_HTML)
 
-@app.route('/login')
-def login_page():
-    """Renders the login page."""
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Handles user login with form submission."""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        print(f"Attempting to log in with: {email}")
+        return redirect(url_for('home'))
+    
     return render_template_string(LOGIN_FORM_HTML)
 
-@app.route('/register')
-def register_page():
-    """Renders the register page."""
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Handles new user registration with form submission."""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        print(f"Attempting to register new user: {name} ({email})")
+        return redirect(url_for('login'))
+        
     return render_template_string(REGISTER_FORM_HTML)
+
+@app.route('/oauth/google')
+def google_oauth():
+    """Placeholder route for initiating the Google OAuth flow."""
+    # This now acts as the destination for the "Sign Up with Google" link
+    print("Initiating Google OAuth/Sign Up flow...")
+    return redirect(url_for('home'))
 
 
 @app.route('/search', methods=['GET'])
 def search():
     """
-    Handles the search request, attempts to call Gemini, and falls back to mock data.
+    Handles general search queries, returning 100+ mock results and a Gemini summary.
     """
-    # 1. Get the query from the URL parameters
     query = request.args.get('query', '').strip()
     
     if not query:
-        # If the query is empty, redirect back to the home page
-        return redirect(url_for('home')) 
+        # Return to homepage if query is empty
+        return redirect(url_for('home'))
     
-    # 2. Determine if Gemini should be called
-    should_call_gemini = (
-        GEMINI_CLIENT_READY and 
-        not query.lower().endswith(tuple(MOCK_QUERY_SUFFIXES))
-    )
-    
-    gemini_result = None
-    
-    if should_call_gemini:
-        print(f"Attempting Gemini search for: {query}")
-        # Calls the function that hits the API
+    # Clear the cache to prevent overflow if the app runs for a long time
+    global MOCK_RESULT_CACHE
+    MOCK_RESULT_CACHE = {} 
+
+    # --- 1. General Search Simulation (Generates 100+ Diverse Results) ---
+    all_results = generate_general_results(query, count=105)
+
+    # --- 2. Gemini Generative Result (The main, featured result) ---
+    if GEMINI_CLIENT_READY:
         gemini_result = generate_gemini_result(client, query)
+        if gemini_result:
+            # Insert the single AI result at the very top (index 0)
+            all_results.insert(0, gemini_result)
         
-    # 3. Generate the static/mock/web results
-    static_results = generate_general_results(query)
+    # Shuffle the mock results for variety (excluding the first one if it's the AI result)
+    if GEMINI_CLIENT_READY and len(all_results) > 1:
+        featured_ai = all_results[0]
+        general_results = all_results[1:]
+        random.shuffle(general_results)
+        all_results = [featured_ai] + general_results
+    else:
+        # If no Gemini, shuffle all general results
+        random.shuffle(all_results)
     
-    # 4. Combine the results. Place the Gemini result (if successful) at the top.
-    results = []
-    if gemini_result:
-        results.append(gemini_result)
-        
-    # Add the static results
-    results.extend(static_results)
+    # Ensure a maximum of 100 results are displayed to keep the page size manageable
+    final_results = all_results[:100]
 
-    # 5. Render the search results template with the combined data
     return render_template_string(
-        SEARCH_RESULTS_HTML, 
-        query=query, 
-        results=results
+        SEARCH_RESULTS_HTML,
+        query=query,
+        results=final_results,
+        gemini_active=GEMINI_CLIENT_READY
     )
 
-@app.route('/article/<slug>')
+@app.route('/article/<slug>', methods=['GET'])
 def article(slug):
     """
-    Simulates loading a full article based on the slug.
-    Loads data from the MOCK_RESULT_CACHE.
+    Simulates a full article page by looking up the result in the cache.
     """
-    # Grab the original query parameter used to generate the results
-    original_query = request.args.get('query', 'General Research')
-
+    original_query = request.args.get('query', 'research')
     article_data = MOCK_RESULT_CACHE.get(slug)
     
-    if article_data:
-        return render_template_string(
-            ARTICLE_PAGE_HTML, 
-            article=article_data, 
-            original_query=original_query
-        )
-    else:
-        # Handle case where article is not found (e.g., 404 page)
-        return f"Article with slug '{slug}' not found.", 404
+    if not article_data:
+        # If the slug is not found (e.g., page refresh or not generated in the current session)
+        # We can try to generate a fallback mock article based on the slug's title part
+        fallback_title = slug.rsplit('-', 1)[0].replace('-', ' ').title()
+        article_data = {
+            "title": f"Error: Article Not Found (Mock Title: {fallback_title})",
+            "author": "System Error",
+            "year": 2025,
+            "source": "Fallback Cache Miss",
+            "summary": "The full article content could not be retrieved from the cache. Please return to the search results page and click the link again to reload the content.",
+        }
+
+    return render_template_string(
+        ARTICLE_PAGE_HTML,
+        article=article_data,
+        original_query=original_query
+    )
 
 
-# Placeholder routes for login/register actions
-@app.route('/login', methods=['POST'])
-def handle_login():
-    """Simulated login handler."""
-    # In a real app, you would validate credentials here.
-    return redirect(url_for('home'))
-
-@app.route('/register', methods=['POST'])
-def handle_register():
-    """Simulated register handler."""
-    # In a real app, you would create a new user here.
-    return redirect(url_for('home'))
-
-# Placeholder route for Google OAuth
-@app.route('/oauth/google')
-def handle_oauth():
-    """Simulated Google OAuth handler."""
-    return "Simulating Google login...", 200
-
+# -------------------------------------------------------------------------
+# Application Run (FIXED FOR FASTER LOCAL DEVELOPMENT)
+# -------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print("--- Starting MindWork Flask App ---")
-    print("Visit http://127.0.0.1:5000/")
-    # Running with debug=True to display tracebacks in the browser for easy debugging
-    app.run(debug=True)
+    print("----------------------------------------------------------")
+    print("Flask Application Running Locally (via built-in server):")
+    print("Homepage: https://mind-work.onrender.com")
+    print(f"Gemini Status: {'✅ Active' if GEMINI_CLIENT_READY else '❌ Inactive (Set GEMINI_API_KEY)'}")
+    print("----------------------------------------------------------")
+    
+    app.run(host='0.0.0.0', port=5002, debug=True)
